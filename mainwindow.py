@@ -7,6 +7,7 @@ from view import View
 from ruleswidget import RulesWidget
 
 import re
+import chardet
 
 def parseTime(time):
   match = re.search('(\d+)[\.:](\d+)', time)
@@ -31,7 +32,7 @@ COLORS = [
   Qt.darkGray
 ]
 def categoryColor(category):
-  return COLORS[category]
+  return COLORS[category % len(category)]
 
 class MainWindow(QMainWindow):
   def __init__(self):
