@@ -134,11 +134,11 @@ class MainWindow(QMainWindow):
 
     i = 0
     for rule in self.rw.rules():
-      i = i + 1
-      tick = QGraphicsLineItem(-5, yMax - i * 100, 6, yMax - i*100, yAxis)
+      tick = QGraphicsLineItem(-5, i * 100, 6, i*100, yAxis)
       label = QGraphicsTextItem(rule.name, yAxis)
       label.setTextWidth(130)
-      label.setPos(-150, yMax + 50 - i*100 - label.boundingRect().height()/2)
+      label.setPos(-150, 50 + i*100 - label.boundingRect().height()/2)
+      i = i + 1
 
     yArrow = QGraphicsPolygonItem(arrow())
     yArrow.setPos(0, -30)
