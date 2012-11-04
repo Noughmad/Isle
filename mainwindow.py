@@ -127,6 +127,19 @@ class MainWindow(QMainWindow):
     xArrow.setRotation(-90)
     xArrow.setBrush(QBrush(Qt.black))
 
+    for i in range(int(xMax/300+1)):
+      tick = QGraphicsLineItem(i*300, yMax + 5, i*300, yMax + 1, xAxis)
+      label = QGraphicsTextItem('%.2d:%.2d' % (i*5, 0), xAxis)
+      label.setPos(i*300 - 22, yMax + 5)
+
+    i = 0
+    for rule in self.rw.rules():
+      i = i + 1
+      tick = QGraphicsLineItem(-5, yMax - i * 100, 6, yMax - i*100, yAxis)
+      label = QGraphicsTextItem(rule.name, yAxis)
+      label.setTextWidth(130)
+      label.setPos(-150, yMax + 50 - i*100 - label.boundingRect().height()/2)
+
     yArrow = QGraphicsPolygonItem(arrow())
     yArrow.setPos(0, -30)
     yArrow.setRotation(180)
