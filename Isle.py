@@ -1,17 +1,13 @@
 import sys
-from parser import Parser
+from mainwindow import MainWindow
+from PyQt4.QtGui import QApplication
 
 if __name__ == "__main__":
-  categories = [
-    'Observation',
-    'Formulation of hypethesis',
-    'Prediction',
-    'Testing experiment',
-    'Recognizing patterns',
-    'Collecting data',
-  ]
+  app = QApplication(sys.argv)
+  mw = MainWindow()
+  mw.show()
 
-  parser = Parser(categories)
-  with open(sys.argv[1], 'rt') as f:
-    parser.feed(f.read())
-
+  if len(sys.argv) > 1:
+    mw.loadFileByName(sys.argv[1])
+  
+  sys.exit(app.exec_())
