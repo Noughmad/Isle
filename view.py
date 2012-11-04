@@ -7,7 +7,7 @@ class View(QGraphicsView):
     self.zoom = 1
 
   def wheelEvent(self, event):
-    self.zoom = self.zoom * pow(2, -event.delta() / 480.0)
+    self.zoom = self.zoom * pow(2, event.delta() / 480.0)
     if self.zoom < 0.07:
       self.zoom = 0.07
     if self.zoom > 100:
@@ -23,8 +23,8 @@ class View(QGraphicsView):
     self.setTransform(QTransform().scale(self.zoom, self.zoom))
 
   def resetView(self):
-    xScale = self.sceneRect().width() / self.contentsRect().width()
-    yScale = self.sceneRect().height() / self.contentsRect().height()
+    xScale = self.contentsRect().width() / self.sceneRect().width()
+    yScale = self.contentsRect().height() / self.sceneRect().height()
     self.zoom = min(xScale, yScale)
     self.setTransform(QTransform().scale(self.zoom, self.zoom))
     self.centerOn(self.sceneRect().center())
