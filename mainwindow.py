@@ -1,5 +1,6 @@
 from PyQt4.QtGui import *
 from PyQt4.QtCore import Qt, QPointF
+from PyQt4.QtSvg import QSvgGenerator
 
 from parser import Parser
 from view import View
@@ -73,6 +74,11 @@ class MainWindow(QMainWindow):
     quit = QAction('Quit', self)
     quit.triggered.connect(qApp.quit)
     fileMenu.addAction(quit)
+
+    imageMenu = self.menuBar().addMenu("&Image")
+    save = QAction('Export image', self)
+    save.triggered.connect(self.saveImage)
+    imageMenu.addAction(save)
 
   def loadFile(self):
     name = QFileDialog.getOpenFileName(self, None, None, "HTML Files (*.html *.htm *.xhtml *.xml)")
@@ -151,3 +157,28 @@ class MainWindow(QMainWindow):
     self.scene.addItem(yArrow)
 
     self.view.resetView()
+
+  def saveImage(self):
+    name = QFileDialog.getSaveFileName(self, None, None, "Image Files (*.png *.jpg);;Vector Image Files (*.svg *.svgz)")
+    if name:
+      if name.endswith('.svg') or name.endswith('.svgz'):
+        self.saveAsSvg(name)
+      else:
+        self.saveAsImage(name)
+
+  def saveAsSvg(self, name):
+    generator = QSvgGenerator()
+    generator.setFileName(name)
+    painter = QPainter()
+    painter.begin(generator)
+    self.scene.render(painter)
+    painter.end()
+
+  def saveAsImage(self, name):
+    image = QImage(self.scene.sceneRect().size().toSize(), QImage.Format_RGB32)
+    image.fill(Qt.white)
+    painter = QPainter()
+    painter.begin(image)
+    self.scene.render(painter)
+    painter.end()
+    image.save(name)
