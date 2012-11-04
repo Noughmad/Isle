@@ -2,8 +2,8 @@ from PyQt4.QtGui import *
 from PyQt4.QtCore import Qt, QPointF
 
 from parser import Parser
-from rules import Rules
 from view import View
+from ruleswidget import RulesWidget
 
 import re
 
@@ -13,18 +13,6 @@ def parseTime(time):
     return 60 * int(match.group(1)) + int(match.group(2))
   else:
     return 0
-
-CATEGORIES = [
-  'Observation',
-  'Formulation of hypothesis',
-  'Testing experiment',
-  'Prediction'
-]
-
-def createRules(cat):
-  r = Rules()
-  r.rules = [cat]
-  return r
 
 def arrow():
   polygon = QPolygonF(4)
@@ -51,9 +39,6 @@ class MainWindow(QMainWindow):
 
     self.parser = Parser()
 
-    # TODO: This will be configurable with a dockwidget
-    self.rules = [createRules(cat) for cat in CATEGORIES]
-
     self.view = View(self)
     self.setCentralWidget(self.view)
 
@@ -63,6 +48,21 @@ class MainWindow(QMainWindow):
     self.zoom = 1
 
     self.createActions()
+
+    dock = QDockWidget(self)
+    self.rw = RulesWidget(self)
+    self.rw.rulesChanged.connect(self.displayIsle)
+    dock.setWidget(self.rw)
+    dock.setWindowTitle('ISLE Steps')
+
+    dock = QDockWidget(self)
+    self.unmatchedWidget = QTreeWidget(self)
+    self.unmatchedWidget.header().hide()
+    self.unmatchedWidget.setRootIsDecorated(False)
+    self.unmatchedWidget.setDragEnabled(True)
+    self.unmatchedWidget.setDragDropMode(QAbstractItemView.DragOnly)
+    dock.setWidget(self.unmatchedWidget)
+    dock.setWindowTitle('Unmatched actions')
 
   def createActions(self):
     fileMenu = self.menuBar().addMenu("&File")
@@ -87,7 +87,7 @@ class MainWindow(QMainWindow):
   def getCategories(self, action):
     cat = []
     i = 0
-    for r in self.rules:
+    for r in self.rw.rules():
       if any(r.match(s) for s in action.steps):
         cat.append(i)
       i = i + 1
@@ -101,15 +101,22 @@ class MainWindow(QMainWindow):
     offset = parseTime(self.parser.actions[0].start)
     endTime = parseTime(self.parser.actions[-1].end) - offset
 
-    self.drawAxes(endTime, len(CATEGORIES) * 100)
+    self.drawAxes(endTime, len(self.rw.rules()) * 100)
+
+    self.unmatchedWidget.clear()
     for action in self.parser.actions:
       x1 = parseTime(action.start) - offset
       x2 = parseTime(action.end) - offset
-      for cat in self.getCategories(action):
-        item = QGraphicsRectItem(x1, cat*100+self.margin, x2-x1, 100-2*self.margin)
-        item.setBrush(QBrush(categoryColor(cat)))
-        item.setToolTip("%s - %s: %s" % (action.start, action.end, ', '.join(action.steps)))
-        self.scene.addItem(item)
+      categories = self.getCategories(action)
+      if categories:
+        for cat in categories:
+          item = QGraphicsRectItem(x1, cat*100+self.margin, x2-x1, 100-2*self.margin)
+          item.setBrush(QBrush(categoryColor(cat)))
+          item.setToolTip("%s - %s: %s" % (action.start, action.end, ', '.join(action.steps)))
+          self.scene.addItem(item)
+      else:
+        item = QTreeWidgetItem(action.steps)
+        self.unmatchedWidget.addTopLevelItem(item)
 
   def drawAxes(self, xMax, yMax):
     xAxis = QGraphicsLineItem(-10, yMax, xMax + 30, yMax)
@@ -131,4 +138,3 @@ class MainWindow(QMainWindow):
     self.scene.addItem(yArrow)
 
     self.view.resetView()
-
