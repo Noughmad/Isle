@@ -36,13 +36,15 @@ class Parser(HTMLParser):
         self.action = None
     elif tag == 'td':
       if self.column == 1:
-        match = self.timeRe.match(self.data)
-        if match:
-          (self.action.start, self.action.end) = match.group(1, 2)
-        else:
-          match = self.oneTimeRe.match(self.data)
+        if self.action:
+          print(self.data)
+          match = self.timeRe.search(self.data)
           if match:
-            self.action.start = self.action.end = match.group(1)
+            (self.action.start, self.action.end) = match.group(1, 2)
+          else:
+            match = self.oneTimeRe.search(self.data)
+            if match:
+              self.action.start = self.action.end = match.group(1)
       elif self.column == 2:
         if self.action:
           steps = self.dataRe.sub("", self.data)

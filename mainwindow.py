@@ -86,8 +86,10 @@ class MainWindow(QMainWindow):
       self.loadFileByName(name)
 
   def loadFileByName(self, name):
-    with open(name, 'rt') as f:
-      self.parser.feed(f.read())
+    with open(name, 'rb') as f:
+      content = f.read()
+      encoding = chardet.detect(content)['encoding']
+      self.parser.feed(content.decode(encoding))
     self.displayIsle()
   
   def getCategories(self, action):
