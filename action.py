@@ -23,6 +23,8 @@ class Action:
     self.end = None
     self.steps = []
     self.talkers = set()
+    self.hypotheses = set()
+    self.phenomena = set()
 
   def __repr__(self):
     return "Action [%s - %s]: %s (%s)" % (self.start, self.end, ', '.join(self.steps), ','.join(self.talkers))

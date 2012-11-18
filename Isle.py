@@ -23,6 +23,11 @@ from PyQt4.QtGui import QApplication
 
 if __name__ == "__main__":
   app = QApplication(sys.argv)
+
+  app.setOrganizationName("Miha Čančula")
+  app.setOrganizationDomain("noughmad.com")
+  app.setApplicationName("Isle")
+
   mw = MainWindow()
   mw.show()
 

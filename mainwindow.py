@@ -17,12 +17,13 @@ along with This program. If not, see http://www.gnu.org/licenses/.
 
 """
 from PyQt4.QtGui import *
-from PyQt4.QtCore import Qt, QPointF
+from PyQt4.QtCore import *
 from PyQt4.QtSvg import QSvgGenerator
 
-from parser import Parser
-from view import View
-from ruleswidget import RulesWidget
+from parser import *
+from view import *
+from ruleswidget import *
+from optionswidget import *
 
 import re
 import chardet
@@ -74,6 +75,7 @@ class MainWindow(QMainWindow):
     self.rw.rulesChanged.connect(self.displayIsle)
     dock.setWidget(self.rw)
     dock.setWindowTitle('ISLE Steps')
+    self.addDockWidget(Qt.TopDockWidgetArea, dock)
 
     dock = QDockWidget(self)
     self.unmatchedWidget = QTreeWidget(self)
@@ -83,6 +85,14 @@ class MainWindow(QMainWindow):
     self.unmatchedWidget.setDragDropMode(QAbstractItemView.DragOnly)
     dock.setWidget(self.unmatchedWidget)
     dock.setWindowTitle('Unmatched actions')
+    self.addDockWidget(Qt.LeftDockWidgetArea, dock)
+
+    dock = QDockWidget(self)
+    self.optionsWidget = OptionsWidget(self)
+    self.optionsWidget.optionsChanged.connect(self.displayIsle)
+    dock.setWidget(self.optionsWidget)
+    dock.setWindowTitle('Options')
+    self.addDockWidget(Qt.LeftDockWidgetArea, dock)
 
   def createActions(self):
     fileMenu = self.menuBar().addMenu("&File")
@@ -131,19 +141,58 @@ class MainWindow(QMainWindow):
     self.drawAxes(endTime, len(self.rw.rules()) * 100)
 
     self.unmatchedWidget.clear()
+    colorOption = self.optionsWidget.colorOption()
     for action in self.parser.actions:
       x1 = parseTime(action.start) - offset
       x2 = parseTime(action.end) - offset
       categories = self.getCategories(action)
       if categories:
         for cat in categories:
-          item = QGraphicsRectItem(x1, cat*100+self.margin, x2-x1, 100-2*self.margin)
-          item.setBrush(QBrush(categoryColor(cat)))
+          item = self.createActionItem(action, cat, QRectF(x1, cat*100+self.margin, x2-x1, 100-2*self.margin), colorOption)
           item.setToolTip("%s - %s: %s" % (action.start, action.end, ', '.join(action.steps)))
           self.scene.addItem(item)
       else:
         item = QTreeWidgetItem(action.steps)
         self.unmatchedWidget.addTopLevelItem(item)
+
+  def createActionItem(self, action, category, rect, colorOption):
+    if colorOption == COLOR_PERSON:
+      item = QGraphicsRectItem(rect)
+      item.setBrush(self.getPersonColor(action.talkers))
+    elif colorOption == COLOR_STEP:
+      item = QGraphicsRectItem(rect)
+      item.setBrush(categoryColor(category))
+    else:
+      hs = list(action.hypotheses)
+      hs.sort()
+      n = len(hs)
+      item = QGraphicsRectItem(rect)
+      if n:
+        start = 0
+        step = 100 / n
+        item.setBrush(QBrush())
+        item.setPen(QPen())
+        for h in hs:
+          r = QRectF(rect.left(), rect.top() + start, rect.width(), step)
+          i = QGraphicsRectItem(r, item)
+          i.setBrush(self.getHypothesisColor(h))
+      else:
+        item.setBrush(Qt.darkGray)
+    return item
+
+  def getPersonColor(self, talkers):
+    if 'A' in talkers and 'B' in talkers:
+      return Qt.darkMagenta
+    elif 'A' in talkers:
+      return Qt.red
+    elif 'B' in talkers:
+      return Qt.blue
+    else:
+      return Qt.gray
+
+  def getHypothesisColor(self, hypothesis):
+    print(hypothesis)
+    return Qt.black
 
   def drawAxes(self, xMax, yMax):
     xAxis = QGraphicsLineItem(-10, yMax, xMax + 30, yMax)

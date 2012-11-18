@@ -18,7 +18,7 @@ along with This program. If not, see http://www.gnu.org/licenses/.
 """
 
 from PyQt4.QtGui import *
-from PyQt4.QtCore import pyqtSignal
+from PyQt4.QtCore import pyqtSignal, QSettings
 from ui_ruleswidget import Ui_RulesWidget
 
 from rules import Rules
@@ -35,13 +35,26 @@ class RulesWidget(QWidget):
     self.ui.setupUi(self)
 
     self.ui.treeView.setModel(self.model)
-    self.loadDefaultRules()
+    self.loadRules()
+    if (self.model.invisibleRootItem().rowCount() == 0):
+      self.loadDefaultRules()
 
     self.ui.addCategoryButton.clicked.connect(self.addCategory)
     self.ui.addRuleButton.clicked.connect(self.addRule)
     self.ui.removeButton.clicked.connect(self.remove)
 
-    self.model.dataChanged.connect(self.rulesChanged)
+    self.model.dataChanged.connect(self.saveAndNotify)
+
+  def saveAndNotify(self):
+    s = QSettings(self)
+    s.beginGroup('Rules')
+    for r in self.rules():
+      s.beginGroup(r.name)
+      s.setValue('Name', r.name)
+      s.setValue('Rules', r.rules)
+      s.endGroup()
+    s.endGroup()
+    self.rulesChanged.emit()
 
   def rules(self):
     ret = []
@@ -54,6 +67,23 @@ class RulesWidget(QWidget):
         r.rules.append(ruleItem.text())
       ret.append(r)
     return ret
+
+  def loadRules(self):
+    s = QSettings(self)
+    s.beginGroup('Rules')
+    for group in s.childGroups():
+      s.beginGroup(group)
+      name = s.value('Name')
+      item = QStandardItem(s.value('Name'))
+      rules = s.value('Rules')
+      if rules:
+        for rule in rules:
+          item.appendRow(QStandardItem(rule))
+      self.model.invisibleRootItem().appendRow(item)
+      s.endGroup()
+
+    s.endGroup()
+    self.saveAndNotify()
 
   def loadDefaultRules(self):
     obs = QStandardItem('Observation')
@@ -77,7 +107,7 @@ class RulesWidget(QWidget):
     cat.appendRow(QStandardItem('New Rule'))
     self.model.invisibleRootItem().appendRow(cat)
     self.ui.treeView.expand(cat.index())
-    self.rulesChanged.emit()
+    self.saveAndNotify()
 
   def addRule(self):
     idx = self.ui.treeView.selectedIndexes()
@@ -93,4 +123,4 @@ class RulesWidget(QWidget):
     if not idx:
       return
     self.model.removeRows(idx[0].row(), 1, idx[0].parent())
-    self.rulesChanged.emit()
+    self.saveAndNotify()
