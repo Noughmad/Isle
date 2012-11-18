@@ -65,7 +65,7 @@ class MainWindow(QMainWindow):
 
     self.scene = QGraphicsScene(self)
     self.view.setScene(self.scene)
-    self.margin = 2
+    self.margin = 5
     self.zoom = 1
 
     self.createActions()
@@ -119,6 +119,7 @@ class MainWindow(QMainWindow):
       content = f.read()
       encoding = chardet.detect(content)['encoding']
       self.parser.feed(content.decode(encoding))
+    self.calculatePH()
     self.displayIsle()
   
   def getCategories(self, action):
@@ -129,6 +130,29 @@ class MainWindow(QMainWindow):
         cat.append(i)
       i = i + 1
     return cat
+
+  def calculatePH(self):
+    allHypotheses = {}
+    for action in self.parser.actions:
+      if len(action.phenomena) != 1:
+        continue
+
+      p = action.phenomena[0]
+      if not p in allHypotheses:
+        allHypotheses[p] = []
+      for h in action.hypotheses:
+        allHypotheses[p].append(h)
+
+    self.hypoIndexes = {}
+    self.hypoCounts = {}
+    for p, hs in allHypotheses.items():
+      hl = list(set(hs))
+      hl.sort()
+      i = 0
+      for h in hl:
+        self.hypoIndexes[h] = (p, i)
+        i = i + 1
+      self.hypoCounts[p] = len(hl)
 
   def displayIsle(self):
     self.scene.clear()
@@ -148,7 +172,14 @@ class MainWindow(QMainWindow):
       categories = self.getCategories(action)
       if categories:
         for cat in categories:
-          item = self.createActionItem(action, cat, QRectF(x1, cat*100+self.margin, x2-x1, 100-2*self.margin), colorOption)
+          rule = self.rw.rules()[cat]
+          if rule.name == 'Testing experiment' and action.judgment and self.optionsWidget.showJudgment():
+            item = self.createActionItem(action, cat, QRectF(x1, cat*100+self.margin, x2-x1, 100-2*self.margin-15), colorOption)
+            j = QGraphicsTextItem('J')
+            j.setPos((x1+x2)/2 - 5, cat*100 + self.margin + 72)
+            self.scene.addItem(j)
+          else:
+            item = self.createActionItem(action, cat, QRectF(x1, cat*100+self.margin, x2-x1, 100-2*self.margin), colorOption)
           item.setToolTip("%s - %s: %s" % (action.start, action.end, ', '.join(action.steps)))
           self.scene.addItem(item)
       else:
@@ -163,21 +194,22 @@ class MainWindow(QMainWindow):
       item = QGraphicsRectItem(rect)
       item.setBrush(categoryColor(category))
     else:
-      hs = list(action.hypotheses)
-      hs.sort()
-      n = len(hs)
+      n = len(action.hypotheses)
       item = QGraphicsRectItem(rect)
       if n:
         start = 0
-        step = 100 / n
+        step = rect.height() / n
         item.setBrush(QBrush())
         item.setPen(QPen())
-        for h in hs:
+        for h in action.hypotheses:
           r = QRectF(rect.left(), rect.top() + start, rect.width(), step)
           i = QGraphicsRectItem(r, item)
           i.setBrush(self.getHypothesisColor(h))
+          i.setPen(QPen(Qt.NoPen))
+          start = start + step
       else:
         item.setBrush(Qt.darkGray)
+    item.setPen(QPen(Qt.NoPen))
     return item
 
   def getPersonColor(self, talkers):
@@ -191,8 +223,13 @@ class MainWindow(QMainWindow):
       return Qt.gray
 
   def getHypothesisColor(self, hypothesis):
-    print(hypothesis)
-    return Qt.black
+    (p, i) = self.hypoIndexes[hypothesis]
+    n = self.hypoCounts[p]
+    i = i/max(1, n-1)
+    if p == 1:
+      return QColor(255, 255*i, 0)
+    else:
+      return QColor(0, 255 - 255 * i + 100 * i * (1-i), 255*i + 100 * i * (1-i))
 
   def drawAxes(self, xMax, yMax):
     xAxis = QGraphicsLineItem(-10, yMax, xMax + 30, yMax)

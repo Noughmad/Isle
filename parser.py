@@ -29,6 +29,7 @@ class Parser(HTMLParser):
     self.oneTimeRe = re.compile(r'(\d{1,2}[\.:]\d\d)')
     self.dataRe = re.compile(r'(\(.*\))')
     self.talkerRe = re.compile(r'([a-zA-Z]):\s')
+    self.phRe = re.compile(r'\[(.+?)\]')
     self.actions = []
     self.action = None
     self.startTime = None
@@ -67,6 +68,22 @@ class Parser(HTMLParser):
       elif self.column == 2:
         if self.action:
           steps = self.dataRe.sub("", self.data)
+          phMatch = self.phRe.search(self.data)
+          if phMatch:
+            for s in phMatch.group(1).split(','):
+              ph = s.strip()
+              print(ph)
+              if ph.startswith('P'):
+                self.action.phenomena.append(int(ph[1:]))
+              elif ph.startswith('H'):
+                self.action.hypotheses.append(int(ph[1:]))
+              elif ph == 'J':
+                self.action.judgment = True
+            self.action.phenomena.sort()
+            self.action.hypotheses.sort()
+          if 'judgment' in steps or 'judgement' in steps:
+            self.action.judgment = True
+          steps = self.phRe.sub("", steps)
           self.action.steps = [s.strip() for s in steps.split(',')]
       elif self.column == 4:
         if self.action:

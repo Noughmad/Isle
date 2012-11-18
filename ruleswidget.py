@@ -47,8 +47,10 @@ class RulesWidget(QWidget):
 
   def saveAndNotify(self):
     s = QSettings(self)
+    rules = self.rules()
+    s.setValue('RuleNames', [r.name for r in rules])
     s.beginGroup('Rules')
-    for r in self.rules():
+    for r in rules:
       s.beginGroup(r.name)
       s.setValue('Name', r.name)
       s.setValue('Rules', r.rules)
@@ -70,10 +72,12 @@ class RulesWidget(QWidget):
 
   def loadRules(self):
     s = QSettings(self)
+    names = s.value('RuleNames')
     s.beginGroup('Rules')
-    for group in s.childGroups():
-      s.beginGroup(group)
-      name = s.value('Name')
+    if not names:
+      return
+    for n in names:
+      s.beginGroup(n)
       item = QStandardItem(s.value('Name'))
       rules = s.value('Rules')
       if rules:
