@@ -118,6 +118,7 @@ class MainWindow(QMainWindow):
     with open(name, 'rb') as f:
       content = f.read()
       encoding = chardet.detect(content)['encoding']
+      self.parser.actions = []
       self.parser.feed(content.decode(encoding))
     self.calculatePH()
     self.displayIsle()
