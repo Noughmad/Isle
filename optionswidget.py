@@ -35,8 +35,10 @@ class OptionsWidget(QWidget):
     self.ui = Ui_OptionsWidget()
     self.ui.setupUi(self)
 
-    for check in [self.ui.colorByPerson, self.ui.colorByHypothesis, self.ui.colorByStep, self.ui.showJudgment]:
+    for check in [self.ui.colorByPerson, self.ui.colorByHypothesis, self.ui.colorByStep, self.ui.showJudgment, self.ui.coloredStepsCheck]:
       check.toggled.connect(self.optionsChanged)
+    self.ui.tabWidget.currentChanged.connect(self.optionsChanged)
+    self.ui.sourceStepComboBox.currentIndexChanged.connect(self.optionsChanged)
 
   def colorOption(self):
     if self.ui.colorByPerson.isChecked():

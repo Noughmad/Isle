@@ -27,6 +27,7 @@ from optionswidget import *
 
 import re
 import chardet
+import math
 
 def parseTime(time):
   match = re.search('(\d+)[\.:](\d+)', time)
@@ -37,18 +38,22 @@ def parseTime(time):
 
 def arrow():
   polygon = QPolygonF(4)
-  polygon[0] = QPointF(0, 0)
-  polygon[1] = QPointF(-8, -15)
-  polygon[2] = QPointF(0, -10)
-  polygon[3] = QPointF(8, -15)
+  polygon[0] = QPointF(0, 8)
+  polygon[1] = QPointF(-8, -7)
+  polygon[2] = QPointF(0, -2)
+  polygon[3] = QPointF(8, -7)
   return polygon
 
 COLORS = [
-  Qt.red,
-  Qt.green,
-  Qt.blue,
-  Qt.yellow,
-  Qt.darkGray
+  QColor("orange"),
+  QColor("limegreen"),
+  QColor("gold"),
+  QColor("royalblue"),
+  QColor("red"),
+  QColor("mediumturquoise"),
+  QColor("orchid"),
+  QColor("seagreen"),
+  QColor("skyblue")
 ]
 def categoryColor(category):
   return COLORS[category % len(COLORS)]
@@ -93,6 +98,8 @@ class MainWindow(QMainWindow):
     dock.setWidget(self.optionsWidget)
     dock.setWindowTitle('Options')
     self.addDockWidget(Qt.LeftDockWidgetArea, dock)
+    
+    self.optionsWidget.ui.sourceStepComboBox.setModel(self.rw.model)
 
   def createActions(self):
     fileMenu = self.menuBar().addMenu("&File")
@@ -159,13 +166,30 @@ class MainWindow(QMainWindow):
     self.scene.clear()
     if len(self.parser.actions) < 2:
       return
+    
+    self.unmatchedWidget.clear()
+    for action in self.parser.actions:
+      if not self.getCategories(action):
+        item = QTreeWidgetItem(action.steps)
+        self.unmatchedWidget.addTopLevelItem(item)
+    
+    tab = self.optionsWidget.ui.tabWidget.currentIndex()
+    if tab == 0:
+      self.displayTimeline()
+    elif tab == 1:
+      self.displayHistogram()
+    else:
+      self.displayCycle()
+      
+    self.scene.setSceneRect(self.scene.itemsBoundingRect())
+    
+  def displayTimeline(self):
 
     offset = parseTime(self.parser.actions[0].start)
     endTime = parseTime(self.parser.actions[-1].end) - offset
 
     self.drawAxes(endTime, len(self.rw.rules()) * 100)
 
-    self.unmatchedWidget.clear()
     colorOption = self.optionsWidget.colorOption()
     for action in self.parser.actions:
       x1 = parseTime(action.start) - offset
@@ -183,9 +207,99 @@ class MainWindow(QMainWindow):
             item = self.createActionItem(action, cat, QRectF(x1, cat*100+self.margin, x2-x1, 100-2*self.margin), colorOption)
           item.setToolTip("%s - %s: %s" % (action.start, action.end, ', '.join(action.steps)))
           self.scene.addItem(item)
+        
+  def fluxMatrix(self):
+    R = self.rw.rules()
+    n = len(R)
+    matrix = [[0 for r in R] for s in R]
+    
+    for i in range(len(self.parser.actions) - 1):
+      currentAction = self.parser.actions[i]
+      nextAction = self.parser.actions[i+1]
+      
+      for cc in self.getCategories(currentAction):
+        for nc in self.getCategories(nextAction):
+          matrix[cc][nc] += 1
+    
+    return matrix
+
+  def displayHistogram(self):
+    R = self.rw.rules()
+    cat_index = self.optionsWidget.ui.sourceStepComboBox.currentIndex()
+    
+    values = self.fluxMatrix()[cat_index]
+    for j in range(len(R)):
+      print(R[j].name + " => " + str(values[j]))
+      
+    yMax = 50 * max(values)
+    self.drawAxes(len(self.rw.rules()) * 100, yMax, histogramMax=max(values))
+    for i in range(len(R)):
+      item = QGraphicsRectItem(i * 100 + 10, yMax - values[i] * 50, 80, values[i] * 50)
+      item.setBrush(Qt.blue)
+      self.scene.addItem(item)
+      
+  def drawArrow(self, line, size, r1, r2):
+    position = line.pointAt(r1 / line.length()) * 1/3 + line.pointAt(1 - r2 / line.length()) * 2/3
+    item = QGraphicsPolygonItem(arrow())
+    item.setScale(size / 5)
+    item.setPos(position)
+    item.setRotation(-90 - line.angle())
+    item.setBrush(Qt.black)
+    self.scene.addItem(item)
+      
+  def displayCycle(self):
+    n = len(self.rw.rules())
+    R = 100
+    use_color = self.optionsWidget.ui.coloredStepsCheck.isChecked()
+    
+    times = self.getCategoryTimes()
+    circles = [{
+      'position' : (R * math.sin(2*math.pi*i/n), -R * math.cos(2*math.pi*i/n)), 
+      'size' : 5 + math.sqrt(times[i]), 
+      'color' : categoryColor(i) if use_color else Qt.darkGray,
+      'name' : self.rw.rules()[i].name
+    } for i in range(n)]
+    
+    matrix = self.fluxMatrix()
+    for source in range(n):
+      for destination in range(source):
+        v = matrix[source][destination] + matrix[destination][source]
+        if not v:
+          continue
+        x1, y1 = circles[source]['position']
+        x2, y2 = circles[destination]['position']
+        line = QLineF(x1, y1, x2, y2)
+        item = QGraphicsLineItem(line)
+        pen = QPen()
+        pen.setWidthF(0.5 * v)
+        item.setPen(pen)
+        self.scene.addItem(item)
+        
+        if matrix[source][destination]:
+          self.drawArrow(QLineF(x1, y1, x2, y2), 0.5 + matrix[source][destination]/2, circles[source]['size'], circles[destination]['size'])
+        if matrix[destination][source]:
+          self.drawArrow(QLineF(x2, y2, x1, y1), 0.5 + matrix[destination][source]/2, circles[destination]['size'], circles[source]['size'])
+    
+    for circle in circles:
+      x, y = circle['position']
+      size = circle['size']
+      item = QGraphicsEllipseItem(x - size, y - size, 2*size, 2*size)
+      item.setBrush(circle['color'])
+      self.scene.addItem(item)
+      
+      text = QGraphicsTextItem(circle['name'])
+      text.setPos(x, y)
+      self.scene.addItem(text)
+      
+      if x > 1:
+        text.setPos(x + size + 10, y - 10)
+      elif x < -1:
+        text.setPos(x - size - 10 - text.boundingRect().width(), y - 10)
       else:
-        item = QTreeWidgetItem(action.steps)
-        self.unmatchedWidget.addTopLevelItem(item)
+        if y > 0:
+          text.setPos(x - text.boundingRect().width()/2, y + size + 10)
+        else:
+          text.setPos(x - text.boundingRect().width()/2, y - size - 25)
 
   def createActionItem(self, action, category, rect, colorOption):
     if colorOption == COLOR_PERSON:
@@ -231,8 +345,17 @@ class MainWindow(QMainWindow):
       return QColor(255, 255*i, 0)
     else:
       return QColor(0, 255 - 255 * i + 100 * i * (1-i), 255*i + 100 * i * (1-i))
+    
+  def getCategoryTimes(self):
+    times = [0 for r in self.rw.rules()]
+    for action in self.parser.actions:
+      x1 = parseTime(action.start)
+      x2 = parseTime(action.end)
+      for cat in self.getCategories(action):
+        times[cat] += (x2-x1)
+    return times
 
-  def drawAxes(self, xMax, yMax):
+  def drawAxes(self, xMax, yMax, histogramMax = 0):
     xAxis = QGraphicsLineItem(-10, yMax, xMax + 30, yMax)
     yAxis = QGraphicsLineItem(0, yMax + 10, 0, -30)
 
@@ -241,18 +364,35 @@ class MainWindow(QMainWindow):
     xArrow.setRotation(-90)
     xArrow.setBrush(QBrush(Qt.black))
 
-    for i in range(int(xMax/300+1)):
-      tick = QGraphicsLineItem(i*300, yMax + 5, i*300, yMax + 1, xAxis)
-      label = QGraphicsTextItem('%.2d:%.2d' % (i*5, 0), xAxis)
-      label.setPos(i*300 - 22, yMax + 5)
+    if histogramMax:
+      i = 0
+      for rule in self.rw.rules():
+        tick = QGraphicsLineItem(i*100, yMax - 5, i*100, yMax + 6, xAxis)
+        label = QGraphicsTextItem(rule.name, xAxis)
+        # label.setTextWidth(150)
+        label.setPos(50 + i * 100, yMax + 4)
+        label.setRotation(60)
+        i = i + 1
+      
+      unitHeight = yMax / histogramMax
+      for v in range(histogramMax+1):
+        tick = QGraphicsLineItem(-5, yMax - v * unitHeight, 5, yMax - v * unitHeight)
+        label = QGraphicsTextItem(str(v), yAxis)
+        label.setPos(-20, yMax - v * unitHeight - label.boundingRect().height()/2)
+      
+    else:
+      for i in range(int(xMax/300+1)):
+        tick = QGraphicsLineItem(i*300, yMax + 5, i*300, yMax + 1, xAxis)
+        label = QGraphicsTextItem('%.2d:%.2d' % (i*5, 0), xAxis)
+        label.setPos(i*300 - 22, yMax + 5)
 
-    i = 0
-    for rule in self.rw.rules():
-      tick = QGraphicsLineItem(-5, i * 100, 6, i*100, yAxis)
-      label = QGraphicsTextItem(rule.name, yAxis)
-      label.setTextWidth(130)
-      label.setPos(-150, 50 + i*100 - label.boundingRect().height()/2)
-      i = i + 1
+      i = 0
+      for rule in self.rw.rules():
+        tick = QGraphicsLineItem(-5, i * 100, 6, i*100, yAxis)
+        label = QGraphicsTextItem(rule.name, yAxis)
+        label.setTextWidth(130)
+        label.setPos(-150, 50 + i*100 - label.boundingRect().height()/2)
+        i = i + 1
 
     yArrow = QGraphicsPolygonItem(arrow())
     yArrow.setPos(0, -30)
