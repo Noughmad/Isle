@@ -417,6 +417,7 @@ class MainWindow(QMainWindow):
   def saveAsSvg(self, name):
     generator = QSvgGenerator()
     generator.setFileName(name)
+    generator.setSize(self.scene.sceneRect().size().toSize())
     painter = QPainter()
     painter.begin(generator)
     self.scene.render(painter)
