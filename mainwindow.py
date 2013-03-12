@@ -241,7 +241,7 @@ class MainWindow(QMainWindow):
   def drawArrow(self, line, size, r1, r2):
     position = line.pointAt(r1 / line.length()) * 1/3 + line.pointAt(1 - r2 / line.length()) * 2/3
     item = QGraphicsPolygonItem(arrow())
-    item.setScale(size / 5)
+    item.setScale(size / 3)
     item.setPos(position)
     item.setRotation(-90 - line.angle())
     item.setBrush(Qt.black)
@@ -255,7 +255,7 @@ class MainWindow(QMainWindow):
     times = self.getCategoryTimes()
     circles = [{
       'position' : (R * math.sin(2*math.pi*i/n), -R * math.cos(2*math.pi*i/n)), 
-      'size' : 5 + math.sqrt(times[i]), 
+      'size' : math.sqrt(times[i]), 
       'color' : categoryColor(i) if use_color else Qt.darkGray,
       'name' : self.rw.rules()[i].name
     } for i in range(n)]
