@@ -212,10 +212,12 @@ class MainWindow(QMainWindow):
     R = self.rw.rules()
     n = len(R)
     matrix = [[0 for r in R] for s in R]
+    # actions = [action for action in self.parser.actions if self.getCategories(action)]
+    actions = self.parser.actions
     
-    for i in range(len(self.parser.actions) - 1):
-      currentAction = self.parser.actions[i]
-      nextAction = self.parser.actions[i+1]
+    for i in range(len(actions) - 1):
+      currentAction = actions[i]
+      nextAction = actions[i+1]
       
       for cc in self.getCategories(currentAction):
         for nc in self.getCategories(nextAction):
