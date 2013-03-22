@@ -164,16 +164,16 @@ class MainWindow(QMainWindow):
       self.hypoCounts[p] = len(hl)
       
   def fixActionTimes(self):
+    offset = 0
     for i in range(len(self.parser.actions)):
       s = parseTime(self.parser.actions[i].startText)
       e = parseTime(self.parser.actions[i].endText)
       
-      if i > 1 and s < (self.parser.actions[i-1].start - 1800):
-        s = s + self.parser.actions[i-1].end
-        e = e + self.parser.actions[i-1].end
+      if i > 1 and s + offset < (self.parser.actions[i-1].start - 1800):
+        offset = self.parser.actions[i-1].end
         
-      self.parser.actions[i].start = s
-      self.parser.actions[i].end = e
+      self.parser.actions[i].start = s + offset
+      self.parser.actions[i].end = e + offset
 
   def displayIsle(self):
     self.scene.clear()
