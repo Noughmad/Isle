@@ -35,7 +35,7 @@ class OptionsWidget(QWidget):
     self.ui = Ui_OptionsWidget()
     self.ui.setupUi(self)
 
-    for check in [self.ui.colorByPerson, self.ui.colorByHypothesis, self.ui.colorByStep, self.ui.showJudgment, self.ui.coloredStepsCheck]:
+    for check in [self.ui.colorByPerson, self.ui.colorByHypothesis, self.ui.colorByStep, self.ui.showJudgment, self.ui.coloredStepsCheck, self.ui.transitionsRadioButton, self.ui.overlapRadioButton]:
       check.toggled.connect(self.optionsChanged)
     self.ui.tabWidget.currentChanged.connect(self.optionsChanged)
     self.ui.sourceStepComboBox.currentIndexChanged.connect(self.optionsChanged)

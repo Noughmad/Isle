@@ -238,6 +238,31 @@ class MainWindow(QMainWindow):
     
     return matrix
 
+  def overlapMatrix(self):
+    R = self.rw.rules()
+    n = len(R)
+    matrix = [[0 for r in R] for s in R]
+    actions = self.parser.actions
+    
+    for action in actions:
+      cat = self.getCategories(action)
+      if len(cat) > 1:
+        for c1 in cat:
+          for c2 in cat:
+            matrix[c1][c2] += 1
+    
+    for i in range(len(actions)):
+      currentAction = actions[i]
+      for j in range(i):
+        previousAction = actions[j]
+        if currentAction.start < previousAction.end:
+          for cc in self.getCategories(currentAction):
+            for pc in self.getCategories(previousAction):
+              matrix[cc][pc] += 1
+              matrix[pc][cc] += 1
+    
+    return matrix
+
   def displayHistogram(self):
     R = self.rw.rules()
     cat_index = self.optionsWidget.ui.sourceStepComboBox.currentIndex()
@@ -275,7 +300,13 @@ class MainWindow(QMainWindow):
       'name' : self.rw.rules()[i].name
     } for i in range(n)]
     
-    matrix = self.fluxMatrix()
+    use_flux = self.optionsWidget.ui.transitionsRadioButton.isChecked()
+    
+    if use_flux:
+      matrix = self.fluxMatrix()
+    else:
+      matrix = self.overlapMatrix()
+
     for source in range(n):
       for destination in range(source):
         v = matrix[source][destination] + matrix[destination][source]
@@ -290,10 +321,11 @@ class MainWindow(QMainWindow):
         item.setPen(pen)
         self.scene.addItem(item)
         
-        if matrix[source][destination]:
-          self.drawArrow(QLineF(x1, y1, x2, y2), 0.5 + matrix[source][destination]/2, circles[source]['size'], circles[destination]['size'])
-        if matrix[destination][source]:
-          self.drawArrow(QLineF(x2, y2, x1, y1), 0.5 + matrix[destination][source]/2, circles[destination]['size'], circles[source]['size'])
+        if use_flux:
+          if matrix[source][destination]:
+            self.drawArrow(QLineF(x1, y1, x2, y2), 0.5 + matrix[source][destination]/2, circles[source]['size'], circles[destination]['size'])
+          if matrix[destination][source]:
+            self.drawArrow(QLineF(x2, y2, x1, y1), 0.5 + matrix[destination][source]/2, circles[destination]['size'], circles[source]['size'])
     
     for circle in circles:
       x, y = circle['position']
