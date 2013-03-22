@@ -60,11 +60,11 @@ class Parser(HTMLParser):
           print(self.data)
           match = self.timeRe.search(self.data)
           if match:
-            (self.action.start, self.action.end) = match.group(1, 2)
+            (self.action.startText, self.action.endText) = match.group(1, 2)
           else:
             match = self.oneTimeRe.search(self.data)
             if match:
-              self.action.start = self.action.end = match.group(1)
+              self.action.startText = self.action.endText = match.group(1)
       elif self.column == 2:
         if self.action:
           steps = self.dataRe.sub("", self.data)

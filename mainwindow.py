@@ -128,6 +128,7 @@ class MainWindow(QMainWindow):
       self.parser.actions = []
       self.parser.feed(content.decode(encoding))
     self.calculatePH()
+    self.fixActionTimes()
     self.displayIsle()
   
   def getCategories(self, action):
@@ -161,6 +162,18 @@ class MainWindow(QMainWindow):
         self.hypoIndexes[h] = (p, i)
         i = i + 1
       self.hypoCounts[p] = len(hl)
+      
+  def fixActionTimes(self):
+    for i in range(len(self.parser.actions)):
+      s = parseTime(self.parser.actions[i].startText)
+      e = parseTime(self.parser.actions[i].endText)
+      
+      if i > 1 and s < (self.parser.actions[i-1].start - 1800):
+        s = s + self.parser.actions[i-1].end
+        e = e + self.parser.actions[i-1].end
+        
+      self.parser.actions[i].start = s
+      self.parser.actions[i].end = e
 
   def displayIsle(self):
     self.scene.clear()
@@ -185,15 +198,15 @@ class MainWindow(QMainWindow):
     
   def displayTimeline(self):
 
-    offset = parseTime(self.parser.actions[0].start)
-    endTime = parseTime(self.parser.actions[-1].end) - offset
+    offset = self.parser.actions[0].start
+    endTime = self.parser.actions[-1].end - offset
 
     self.drawAxes(endTime, len(self.rw.rules()) * 100)
 
     colorOption = self.optionsWidget.colorOption()
     for action in self.parser.actions:
-      x1 = parseTime(action.start) - offset
-      x2 = parseTime(action.end) - offset
+      x1 = action.start - offset
+      x2 = action.end - offset
       categories = self.getCategories(action)
       if categories:
         for cat in categories:
@@ -205,7 +218,7 @@ class MainWindow(QMainWindow):
             self.scene.addItem(j)
           else:
             item = self.createActionItem(action, cat, QRectF(x1, cat*100+self.margin, x2-x1, 100-2*self.margin), colorOption)
-          item.setToolTip("%s - %s: %s" % (action.start, action.end, ', '.join(action.steps)))
+          item.setToolTip("%s - %s: %s" % (action.startText, action.endText, ', '.join(action.steps)))
           self.scene.addItem(item)
         
   def fluxMatrix(self):
@@ -351,8 +364,8 @@ class MainWindow(QMainWindow):
   def getCategoryTimes(self):
     times = [0 for r in self.rw.rules()]
     for action in self.parser.actions:
-      x1 = parseTime(action.start)
-      x2 = parseTime(action.end)
+      x1 = action.start
+      x2 = action.end
       for cat in self.getCategories(action):
         times[cat] += (x2-x1)
     return times
