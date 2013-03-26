@@ -329,15 +329,23 @@ class MainWindow(QMainWindow):
         item = QGraphicsLineItem(line)
         pen = QPen()
         pen.setWidthF(0.5 * v)
+        pen.setBrush(Qt.darkGray)
         item.setPen(pen)
         self.scene.addItem(item)
-        
-        if use_flux:
+    
+    if use_flux:
+      for source in range(n):
+        for destination in range(source):
+          v = (matrix[source][destination] + matrix[destination][source]) * 2 * T
+          if not v:
+            continue
+          x1, y1 = circles[source]['position']
+          x2, y2 = circles[destination]['position']
           if matrix[source][destination]:
             self.drawArrow(QLineF(x1, y1, x2, y2), 0.5 + matrix[source][destination] * T, circles[source]['size'], circles[destination]['size'])
           if matrix[destination][source]:
             self.drawArrow(QLineF(x2, y2, x1, y1), 0.5 + matrix[destination][source] * T, circles[destination]['size'], circles[source]['size'])
-    
+
     for circle in circles:
       x, y = circle['position']
       size = circle['size']
