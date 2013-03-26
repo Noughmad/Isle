@@ -282,7 +282,8 @@ class MainWindow(QMainWindow):
       self.scene.addItem(item)
       
   def drawArrow(self, line, size, r1, r2):
-    position = line.pointAt(r1 / line.length()) * 1/3 + line.pointAt(1 - r2 / line.length()) * 2/3
+    P = self.optionsWidget.ui.arrowPositionSlider.value() / 100
+    position = line.pointAt(r1 / line.length()) * (1-P) + line.pointAt(1 - r2 / line.length()) * P
     item = QGraphicsPolygonItem(arrow())
     item.setScale(size / 3)
     item.setPos(position)
@@ -292,13 +293,14 @@ class MainWindow(QMainWindow):
       
   def displayCycle(self):
     n = len(self.rw.rules())
-    R = 100
+    R = self.optionsWidget.ui.cycleRadiusSlider.value()
+    T = self.optionsWidget.ui.thicknessSlider.value() / 100
     use_color = self.optionsWidget.ui.coloredStepsCheck.isChecked()
     
     times = self.getCategoryTimes()
     circles = [{
       'position' : (R * math.sin(2*math.pi*i/n), -R * math.cos(2*math.pi*i/n)), 
-      'size' : math.sqrt(times[i]), 
+      'size' : math.sqrt(times[i] * self.optionsWidget.ui.stepSizeSlider.value() / 10), 
       'color' : categoryColor(i) if use_color else Qt.darkGray,
       'name' : self.rw.rules()[i].name
     } for i in range(n)]
@@ -312,7 +314,7 @@ class MainWindow(QMainWindow):
 
     for source in range(n):
       for destination in range(source):
-        v = matrix[source][destination] + matrix[destination][source]
+        v = (matrix[source][destination] + matrix[destination][source]) * 2 * T
         if not v:
           continue
         x1, y1 = circles[source]['position']
@@ -326,9 +328,9 @@ class MainWindow(QMainWindow):
         
         if use_flux:
           if matrix[source][destination]:
-            self.drawArrow(QLineF(x1, y1, x2, y2), 0.5 + matrix[source][destination]/2, circles[source]['size'], circles[destination]['size'])
+            self.drawArrow(QLineF(x1, y1, x2, y2), 0.5 + matrix[source][destination] * T, circles[source]['size'], circles[destination]['size'])
           if matrix[destination][source]:
-            self.drawArrow(QLineF(x2, y2, x1, y1), 0.5 + matrix[destination][source]/2, circles[destination]['size'], circles[source]['size'])
+            self.drawArrow(QLineF(x2, y2, x1, y1), 0.5 + matrix[destination][source] * T, circles[destination]['size'], circles[source]['size'])
     
     for circle in circles:
       x, y = circle['position']
@@ -397,13 +399,15 @@ class MainWindow(QMainWindow):
       return QColor(0, 255 - 255 * i + 100 * i * (1-i), 255*i + 100 * i * (1-i))
     
   def getCategoryTimes(self):
+    total = self.parser.actions[-1].end - self.parser.actions[0].start
+    
     times = [0 for r in self.rw.rules()]
     for action in self.parser.actions:
       x1 = action.start
       x2 = action.end
       for cat in self.getCategories(action):
         times[cat] += (x2-x1)
-    return times
+    return [t*3600/total for t in times]
 
   def drawAxes(self, xMax, yMax, histogramMax = 0):
     xAxis = QGraphicsLineItem(-10, yMax, xMax + 30, yMax)

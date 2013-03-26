@@ -56,6 +56,7 @@ class RulesWidget(QWidget):
       s.setValue('Rules', r.rules)
       s.endGroup()
     s.endGroup()
+    s.sync()
     self.rulesChanged.emit()
 
   def rules(self):
