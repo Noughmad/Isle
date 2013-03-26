@@ -53,8 +53,11 @@ COLORS = [
   QColor("mediumturquoise"),
   QColor("orchid"),
   QColor("seagreen"),
-  QColor("skyblue")
-]
+  QColor("brown"),
+  QColor("silver"),
+  QColor("olive"),
+  QColor("darkOrchid"),
+  ]
 def categoryColor(category):
   return COLORS[category % len(COLORS)]
 
