@@ -455,7 +455,7 @@ class MainWindow(QMainWindow):
       for i in range(int(xMax/300+1)):
         tick = QGraphicsLineItem(i*300*X, yMax*Y + 5, i*300*X, yMax*Y + 1, xAxis)
         label = QGraphicsTextItem('%.2d:%.2d' % (i*5, 0), xAxis)
-        label.setPos((i*300 - 22)*X, yMax*Y + 5)
+        label.setPos(i*300*X - 22, yMax*Y + 5)
 
       i = 0
       for rule in self.rw.rules():
