@@ -478,6 +478,8 @@ class MainWindow(QMainWindow):
     image.fill(Qt.white)
     painter = QPainter()
     painter.begin(image)
+    painter.setRenderHint(QPainter.Antialiasing, True)
+    painter.setRenderHint(QPainter.TextAntialiasing, True)
     self.scene.render(painter)
     painter.end()
     image.save(name)

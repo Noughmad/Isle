@@ -23,6 +23,8 @@ class View(QGraphicsView):
   def __init__(self, parent):
     QGraphicsView.__init__(self, parent)
     self.setResizeAnchor(QGraphicsView.AnchorUnderMouse)
+    self.setRenderHint(QPainter.Antialiasing, True)
+    self.setRenderHint(QPainter.TextAntialiasing, True)
     self.zoom = 1
 
   def wheelEvent(self, event):
