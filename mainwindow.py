@@ -36,12 +36,12 @@ def parseTime(time):
   else:
     return 0
 
-def arrow():
+def arrow(y = 0):
   polygon = QPolygonF(4)
-  polygon[0] = QPointF(0, 0)
-  polygon[1] = QPointF(-8, -15)
-  polygon[2] = QPointF(0, -10)
-  polygon[3] = QPointF(8, -15)
+  polygon[0] = QPointF(0, y)
+  polygon[1] = QPointF(-8, y-15)
+  polygon[2] = QPointF(0, y-10)
+  polygon[3] = QPointF(8, y-15)
   return polygon
 
 COLORS = [
@@ -290,7 +290,7 @@ class MainWindow(QMainWindow):
   def drawArrow(self, line, size, r1, r2):
     P = self.optionsWidget.ui.arrowPositionSlider.value() / 99
     position = line.pointAt(r1 / line.length()) * (1-P) + line.pointAt(1 - r2 / line.length()) * P
-    item = QGraphicsPolygonItem(arrow())
+    item = QGraphicsPolygonItem(arrow(self.optionsWidget.ui.arrowPointSlider.value()))
     item.setScale(size / 3)
     item.setPos(position)
     item.setRotation(-90 - line.angle())
@@ -300,7 +300,7 @@ class MainWindow(QMainWindow):
   def displayCycle(self):
     n = len(self.rw.rules())
     R = self.optionsWidget.ui.cycleRadiusSlider.value()
-    T = self.optionsWidget.ui.thicknessSlider.value() / 100
+    T = self.optionsWidget.ui.thicknessSlider.value() / 66
     use_color = self.optionsWidget.ui.coloredStepsCheck.isChecked()
     
     times = self.getCategoryTimes()
@@ -356,6 +356,7 @@ class MainWindow(QMainWindow):
           
     
     if use_flux:
+      A = self.optionsWidget.ui.arrowSizeSlider.value() / 100
       for source in range(n):
         for destination in range(source):
           v = (matrix[source][destination] + matrix[destination][source]) * 2 * T
@@ -364,9 +365,9 @@ class MainWindow(QMainWindow):
           x1, y1 = circles[source]['position']
           x2, y2 = circles[destination]['position']
           if matrix[source][destination]:
-            self.drawArrow(QLineF(x1, y1, x2, y2), 0.5 + matrix[source][destination] * T, circles[source]['size'], circles[destination]['size'])
+            self.drawArrow(QLineF(x1, y1, x2, y2), 0.5 + matrix[source][destination] * A, circles[source]['size'], circles[destination]['size'])
           if matrix[destination][source]:
-            self.drawArrow(QLineF(x2, y2, x1, y1), 0.5 + matrix[destination][source] * T, circles[destination]['size'], circles[source]['size'])
+            self.drawArrow(QLineF(x2, y2, x1, y1), 0.5 + matrix[destination][source] * A, circles[destination]['size'], circles[source]['size'])
 
 
   def createActionItem(self, action, category, rect, colorOption):

@@ -17,7 +17,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="timelineTab">
       <attribute name="title">
@@ -210,6 +210,12 @@
             <property name="maximum">
              <number>400</number>
             </property>
+            <property name="singleStep">
+             <number>5</number>
+            </property>
+            <property name="pageStep">
+             <number>20</number>
+            </property>
             <property name="value">
              <number>200</number>
             </property>
@@ -230,6 +236,9 @@
             <property name="maximum">
              <number>50</number>
             </property>
+            <property name="pageStep">
+             <number>5</number>
+            </property>
             <property name="value">
              <number>15</number>
             </property>
@@ -241,12 +250,29 @@
           <item>
            <widget class="QLabel" name="label_3">
             <property name="text">
-             <string>Line and arrow thickness</string>
+             <string>Line thickness</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QSlider" name="thicknessSlider">
+            <property name="value">
+             <number>50</number>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_8">
+            <property name="text">
+             <string>Arrow size</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSlider" name="arrowSizeSlider">
             <property name="value">
              <number>50</number>
             </property>
@@ -266,6 +292,29 @@
            <widget class="QSlider" name="arrowPositionSlider">
             <property name="value">
              <number>70</number>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_7">
+            <property name="text">
+             <string>Arrow center point</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSlider" name="arrowPointSlider">
+            <property name="maximum">
+             <number>15</number>
+            </property>
+            <property name="pageStep">
+             <number>3</number>
+            </property>
+            <property name="value">
+             <number>5</number>
             </property>
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
