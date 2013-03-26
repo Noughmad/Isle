@@ -203,24 +203,28 @@ class MainWindow(QMainWindow):
 
     offset = self.parser.actions[0].start
     endTime = self.parser.actions[-1].end - offset
+    
+    X = self.optionsWidget.ui.xScaleSlider.value() / 30
+    Y = self.optionsWidget.ui.yScaleSlider.value()
+    self.margin = Y / 10
 
-    self.drawAxes(endTime, len(self.rw.rules()) * 100)
+    self.drawAxes(endTime, len(self.rw.rules()), X, Y)
 
     colorOption = self.optionsWidget.colorOption()
     for action in self.parser.actions:
-      x1 = action.start - offset
-      x2 = action.end - offset
+      x1 = (action.start - offset) * X
+      x2 = (action.end - offset) * X
       categories = self.getCategories(action)
       if categories:
         for cat in categories:
           rule = self.rw.rules()[cat]
           if rule.name == 'Testing experiment' and action.judgment and self.optionsWidget.showJudgment():
-            item = self.createActionItem(action, cat, QRectF(x1, cat*100+self.margin, x2-x1, 100-2*self.margin-15), colorOption)
+            item = self.createActionItem(action, cat, QRectF(x1, cat*Y+self.margin, x2-x1, Y-2*self.margin-15), colorOption)
             j = QGraphicsTextItem('J')
-            j.setPos((x1+x2)/2 - 5, cat*100 + self.margin + 72)
+            j.setPos((x1+x2)/2 - 5, cat*Y + self.margin + 72*Y/100)
             self.scene.addItem(j)
           else:
-            item = self.createActionItem(action, cat, QRectF(x1, cat*100+self.margin, x2-x1, 100-2*self.margin), colorOption)
+            item = self.createActionItem(action, cat, QRectF(x1, cat*Y+self.margin, x2-x1, Y-2*self.margin), colorOption)
           item.setToolTip("%s - %s: %s" % (action.startText, action.endText, ', '.join(action.steps)))
           self.scene.addItem(item)
         
@@ -409,12 +413,12 @@ class MainWindow(QMainWindow):
         times[cat] += (x2-x1)
     return [t*3600/total for t in times]
 
-  def drawAxes(self, xMax, yMax, histogramMax = 0):
-    xAxis = QGraphicsLineItem(-10, yMax, xMax + 30, yMax)
-    yAxis = QGraphicsLineItem(0, yMax + 10, 0, -30)
+  def drawAxes(self, xMax, yMax, X, Y, histogramMax = 0):
+    xAxis = QGraphicsLineItem(-10, yMax*Y, xMax*X + 30, yMax*Y)
+    yAxis = QGraphicsLineItem(0, yMax*Y + 10, 0, -30)
 
     xArrow = QGraphicsPolygonItem(arrow())
-    xArrow.setPos(xMax + 30, yMax)
+    xArrow.setPos(xMax*X + 30, yMax*Y)
     xArrow.setRotation(-90)
     xArrow.setBrush(QBrush(Qt.black))
 
@@ -436,16 +440,15 @@ class MainWindow(QMainWindow):
       
     else:
       for i in range(int(xMax/300+1)):
-        tick = QGraphicsLineItem(i*300, yMax + 5, i*300, yMax + 1, xAxis)
+        tick = QGraphicsLineItem(i*300*X, yMax*Y + 5, i*300*X, yMax*Y + 1, xAxis)
         label = QGraphicsTextItem('%.2d:%.2d' % (i*5, 0), xAxis)
-        label.setPos(i*300 - 22, yMax + 5)
+        label.setPos((i*300 - 22)*X, yMax*Y + 5)
 
       i = 0
       for rule in self.rw.rules():
-        tick = QGraphicsLineItem(-5, i * 100, 6, i*100, yAxis)
+        tick = QGraphicsLineItem(-5, i * Y, 6, i*Y, yAxis)
         label = QGraphicsTextItem(rule.name, yAxis)
-        label.setTextWidth(130)
-        label.setPos(-150, 50 + i*100 - label.boundingRect().height()/2)
+        label.setPos(-label.boundingRect().width() - 10, (0.5 + i) * Y - label.boundingRect().height()/2)
         i = i + 1
 
     yArrow = QGraphicsPolygonItem(arrow())

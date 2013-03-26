@@ -17,7 +17,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>2</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="timelineTab">
       <attribute name="title">
@@ -51,6 +51,52 @@
            <widget class="QRadioButton" name="colorByStep">
             <property name="text">
              <string>By ISLE Step</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBox_4">
+         <property name="title">
+          <string>Graph size</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_7">
+          <item>
+           <widget class="QLabel" name="label_5">
+            <property name="text">
+             <string>Time scale (X)</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSlider" name="xScaleSlider">
+            <property name="maximum">
+             <number>50</number>
+            </property>
+            <property name="value">
+             <number>30</number>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_6">
+            <property name="text">
+             <string>Vertical scale (Y)</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSlider" name="yScaleSlider">
+            <property name="value">
+             <number>40</number>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
             </property>
            </widget>
           </item>

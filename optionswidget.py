@@ -44,7 +44,7 @@ class OptionsWidget(QWidget):
     for check in [self.ui.colorByPerson, self.ui.colorByHypothesis, self.ui.colorByStep, self.ui.showJudgment, self.ui.coloredStepsCheck, self.ui.transitionsRadioButton, self.ui.overlapRadioButton]:
       check.toggled.connect(self.optionsChanged)
     
-    for slider in [self.ui.cycleRadiusSlider, self.ui.thicknessSlider, self.ui.stepSizeSlider, self.ui.arrowPositionSlider]:
+    for slider in [self.ui.cycleRadiusSlider, self.ui.thicknessSlider, self.ui.stepSizeSlider, self.ui.arrowPositionSlider, self.ui.xScaleSlider, self.ui.yScaleSlider]:
       slider.valueChanged.connect(self.optionsChanged)
     
     self.ui.tabWidget.currentChanged.connect(self.optionsChanged)
@@ -83,6 +83,8 @@ class OptionsWidget(QWidget):
     else:
       self.ui.colorByStep.setChecked(True)
     self.ui.showJudgment.setChecked(s.value("JudgmentMarkers", True, bool))
+    self.ui.xScaleSlider.setValue(s.value("ScaleX", 40, int))
+    self.ui.yScaleSlider.setValue(s.value("ScaleY", 40, int))
     s.endGroup()
     
     s.beginGroup("Histogram")
@@ -115,6 +117,8 @@ class OptionsWidget(QWidget):
       s.setValue("Color", "Person")
     else:
       s.setValue("Color", "Step")
+    s.setValue("ScaleX", self.ui.xScaleSlider.value())
+    s.setValue("ScaleY", self.ui.yScaleSlider.value())
     s.setValue("JudgmentMarkers", self.ui.showJudgment.isChecked())
     s.endGroup()
     
