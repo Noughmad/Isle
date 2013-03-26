@@ -38,10 +38,10 @@ def parseTime(time):
 
 def arrow():
   polygon = QPolygonF(4)
-  polygon[0] = QPointF(0, 8)
-  polygon[1] = QPointF(-8, -7)
-  polygon[2] = QPointF(0, -2)
-  polygon[3] = QPointF(8, -7)
+  polygon[0] = QPointF(0, 0)
+  polygon[1] = QPointF(-8, -15)
+  polygon[2] = QPointF(0, -10)
+  polygon[3] = QPointF(8, -15)
   return polygon
 
 COLORS = [
@@ -288,7 +288,7 @@ class MainWindow(QMainWindow):
       self.scene.addItem(item)
       
   def drawArrow(self, line, size, r1, r2):
-    P = self.optionsWidget.ui.arrowPositionSlider.value() / 100
+    P = self.optionsWidget.ui.arrowPositionSlider.value() / 99
     position = line.pointAt(r1 / line.length()) * (1-P) + line.pointAt(1 - r2 / line.length()) * P
     item = QGraphicsPolygonItem(arrow())
     item.setScale(size / 3)
@@ -333,19 +333,6 @@ class MainWindow(QMainWindow):
         item.setPen(pen)
         self.scene.addItem(item)
     
-    if use_flux:
-      for source in range(n):
-        for destination in range(source):
-          v = (matrix[source][destination] + matrix[destination][source]) * 2 * T
-          if not v:
-            continue
-          x1, y1 = circles[source]['position']
-          x2, y2 = circles[destination]['position']
-          if matrix[source][destination]:
-            self.drawArrow(QLineF(x1, y1, x2, y2), 0.5 + matrix[source][destination] * T, circles[source]['size'], circles[destination]['size'])
-          if matrix[destination][source]:
-            self.drawArrow(QLineF(x2, y2, x1, y1), 0.5 + matrix[destination][source] * T, circles[destination]['size'], circles[source]['size'])
-
     for circle in circles:
       x, y = circle['position']
       size = circle['size']
@@ -366,6 +353,21 @@ class MainWindow(QMainWindow):
           text.setPos(x - text.boundingRect().width()/2, y + size + 10)
         else:
           text.setPos(x - text.boundingRect().width()/2, y - size - 25)
+          
+    
+    if use_flux:
+      for source in range(n):
+        for destination in range(source):
+          v = (matrix[source][destination] + matrix[destination][source]) * 2 * T
+          if not v:
+            continue
+          x1, y1 = circles[source]['position']
+          x2, y2 = circles[destination]['position']
+          if matrix[source][destination]:
+            self.drawArrow(QLineF(x1, y1, x2, y2), 0.5 + matrix[source][destination] * T, circles[source]['size'], circles[destination]['size'])
+          if matrix[destination][source]:
+            self.drawArrow(QLineF(x2, y2, x1, y1), 0.5 + matrix[destination][source] * T, circles[destination]['size'], circles[source]['size'])
+
 
   def createActionItem(self, action, category, rect, colorOption):
     if colorOption == COLOR_PERSON:
