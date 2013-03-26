@@ -132,6 +132,8 @@ class MainWindow(QMainWindow):
       self.parser.feed(content.decode(encoding))
     self.calculatePH()
     self.fixActionTimes()
+    self._fluxMatrix = self.fluxMatrix()
+    self._overlapMatrix = self.overlapMatrix()
     self.displayIsle()
   
   def getCategories(self, action):
@@ -279,7 +281,7 @@ class MainWindow(QMainWindow):
       print(R[j].name + " => " + str(values[j]))
       
     yMax = 50 * max(values)
-    self.drawAxes(len(self.rw.rules()) * 100, yMax, histogramMax=max(values))
+    self.drawAxes(len(self.rw.rules()) * 100, yMax, 1, 100, histogramMax=max(values))
     for i in range(len(R)):
       item = QGraphicsRectItem(i * 100 + 10, yMax - values[i] * 50, 80, values[i] * 50)
       item.setBrush(Qt.blue)
@@ -312,9 +314,9 @@ class MainWindow(QMainWindow):
     use_flux = self.optionsWidget.ui.transitionsRadioButton.isChecked()
     
     if use_flux:
-      matrix = self.fluxMatrix()
+      matrix = self._fluxMatrix
     else:
-      matrix = self.overlapMatrix()
+      matrix = self._overlapMatrix
 
     for source in range(n):
       for destination in range(source):
