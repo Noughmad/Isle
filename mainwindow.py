@@ -20,11 +20,11 @@ from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 from PyQt4.QtSvg import QSvgGenerator
 
-from parser import *
+from lib.parser import *
 from view import *
 from ruleswidget import *
 from optionswidget import *
-import transitions
+from lib import transitions
 
 import re
 import chardet

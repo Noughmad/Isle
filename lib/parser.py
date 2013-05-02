@@ -18,14 +18,14 @@ along with This program. If not, see http://www.gnu.org/licenses/.
 """
 
 from html.parser import HTMLParser
-from action import Action
+from lib.action import Action
 import re
 
 class Parser(HTMLParser):
 
   def __init__(self):
     HTMLParser.__init__(self)
-    self.timeRe = re.compile(r'(\d{1,2}\.\d\d).+?(\d{1,2}\.\d\d)')
+    self.timeRe = re.compile(r'(\d{1,2}[\.:]\d\d).+?(\d{1,2}[\.:]\d\d)')
     self.oneTimeRe = re.compile(r'(\d{1,2}[\.:]\d\d)')
     self.dataRe = re.compile(r'(\(.*\))')
     self.talkerRe = re.compile(r'([a-zA-Z]):\s')

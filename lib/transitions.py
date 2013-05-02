@@ -25,7 +25,7 @@ def fluxMatrix(actions, rules):
     
     for previousAction in actions:
       
-      if currentAction.start < previousAction.end and currentAction.start > previousAction.start:
+      if currentAction.start <= previousAction.end and currentAction.start > previousAction.start:
         hasOverlap = True
         addToMatrix(matrix, previousAction, currentAction, rules)
         
@@ -34,11 +34,12 @@ def fluxMatrix(actions, rules):
       lastTime = 0
       
       for previousAction in actions:
-        if previousAction.end > lastTime and previousAction.end < currentAction.start:
-          lastTime = previousAction.end
-          lastActions = [previousAction];
-        elif previousAction.end == lastTime:
-          lastActions.append(previousAction);
+        if previousAction.end <= currentAction.start and getCategories(previousAction, rules):
+          if previousAction.end > lastTime and previousAction.end:
+            lastTime = previousAction.end
+            lastActions = [previousAction];
+          elif previousAction.end == lastTime:
+            lastActions.append(previousAction);
       
       for lastAction in lastActions:
         addToMatrix(matrix, lastAction, currentAction, rules)

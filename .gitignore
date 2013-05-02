@@ -2,7 +2,6 @@
 ui_*
 *.kdev4
 __pycache__
-*.html
 *.png
 *.svg
 .directory

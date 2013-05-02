@@ -21,7 +21,7 @@ from PyQt4.QtGui import *
 from PyQt4.QtCore import pyqtSignal, QSettings
 from ui_ruleswidget import Ui_RulesWidget
 
-from rules import Rules
+from lib.rules import Rules
 
 class RulesWidget(QWidget):
 
