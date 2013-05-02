@@ -229,6 +229,13 @@ class MainWindow(QMainWindow):
             item = self.createActionItem(action, cat, QRectF(x1, cat*Y+self.margin, x2-x1, Y-2*self.margin), colorOption)
           item.setToolTip("%s - %s: %s" % (action.startText, action.endText, ', '.join(action.steps)))
           self.scene.addItem(item)
+          
+  def addToMatrix(self, matrix, one, other, bidirectional=False):
+    for cc in self.getCategories(currentAction):
+      for nc in self.getCategories(nextAction):
+        matrix[cc][nc] += 1
+        if bidirectional:
+          matrix[nc][cc] += 1
         
   def fluxMatrix(self):
     R = self.rw.rules()
@@ -237,14 +244,29 @@ class MainWindow(QMainWindow):
     # actions = [action for action in self.parser.actions if self.getCategories(action)]
     actions = self.parser.actions
     
-    for i in range(len(actions) - 1):
-      currentAction = actions[i]
-      nextAction = actions[i+1]
+    for currentAction in actions:
       
-      for cc in self.getCategories(currentAction):
-        for nc in self.getCategories(nextAction):
-          matrix[cc][nc] += 1
-    
+      hasOverlap = False
+      
+      for previousAction in actions:
+        
+        if currentAction.start < previousAction.end:
+          hasOverlap = True
+          addToMatrix(matrix, previousAction, currentAction)
+          
+      if not hasOverlap:
+        lastActions = []
+        lastTime = 0
+        
+        for previousAction in actions:
+          if previousAction.end > lastTime and previousAction.end < currentAction.start:
+            lastTime = previousAction.end
+            lastActions = [previousAction];
+          elif previousAction.end == lastTime:
+            lastActions.append(previousAction);
+        
+        for lastAction in lastActions:
+          addToMatrix(matrix, lastAction, currentAction)
     return matrix
 
   def overlapMatrix(self):
@@ -256,19 +278,14 @@ class MainWindow(QMainWindow):
     for action in actions:
       cat = self.getCategories(action)
       if len(cat) > 1:
-        for c1 in cat:
-          for c2 in cat:
-            matrix[c1][c2] += 1
+        self.addToMatrix(matrix, action, action)
     
     for i in range(len(actions)):
       currentAction = actions[i]
       for j in range(i):
         previousAction = actions[j]
         if currentAction.start < previousAction.end:
-          for cc in self.getCategories(currentAction):
-            for pc in self.getCategories(previousAction):
-              matrix[cc][pc] += 1
-              matrix[pc][cc] += 1
+          self.addToMatrix(matrix, previousAction, currentAction, bidirectional=True)
     
     return matrix
 
