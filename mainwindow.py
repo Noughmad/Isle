@@ -231,8 +231,8 @@ class MainWindow(QMainWindow):
           self.scene.addItem(item)
           
   def addToMatrix(self, matrix, one, other, bidirectional=False):
-    for cc in self.getCategories(currentAction):
-      for nc in self.getCategories(nextAction):
+    for cc in self.getCategories(one):
+      for nc in self.getCategories(other):
         matrix[cc][nc] += 1
         if bidirectional:
           matrix[nc][cc] += 1
@@ -241,7 +241,6 @@ class MainWindow(QMainWindow):
     R = self.rw.rules()
     n = len(R)
     matrix = [[0 for r in R] for s in R]
-    # actions = [action for action in self.parser.actions if self.getCategories(action)]
     actions = self.parser.actions
     
     for currentAction in actions:
@@ -250,9 +249,9 @@ class MainWindow(QMainWindow):
       
       for previousAction in actions:
         
-        if currentAction.start < previousAction.end:
+        if currentAction.start < previousAction.end and currentAction.start > previousAction.start:
           hasOverlap = True
-          addToMatrix(matrix, previousAction, currentAction)
+          self.addToMatrix(matrix, previousAction, currentAction)
           
       if not hasOverlap:
         lastActions = []
@@ -266,7 +265,7 @@ class MainWindow(QMainWindow):
             lastActions.append(previousAction);
         
         for lastAction in lastActions:
-          addToMatrix(matrix, lastAction, currentAction)
+          self.addToMatrix(matrix, lastAction, currentAction)
     return matrix
 
   def overlapMatrix(self):
@@ -293,7 +292,7 @@ class MainWindow(QMainWindow):
     R = self.rw.rules()
     cat_index = self.optionsWidget.ui.sourceStepComboBox.currentIndex()
     
-    values = self.fluxMatrix()[cat_index]
+    values = self._fluxMatrix[cat_index]
     for j in range(len(R)):
       print(R[j].name + " => " + str(values[j]))
       
