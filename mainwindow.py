@@ -24,6 +24,7 @@ from parser import *
 from view import *
 from ruleswidget import *
 from optionswidget import *
+import transitions
 
 import re
 import chardet
@@ -132,18 +133,12 @@ class MainWindow(QMainWindow):
       self.parser.feed(content.decode(encoding))
     self.calculatePH()
     self.fixActionTimes()
-    self._fluxMatrix = self.fluxMatrix()
-    self._overlapMatrix = self.overlapMatrix()
+    self._fluxMatrix = transitions.fluxMatrix(self.parser.actions, self.rw.rules())
+    self._overlapMatrix = transitions.overlapMatrix(self.parser.actions, self.rw.rules())
     self.displayIsle()
   
   def getCategories(self, action):
-    cat = []
-    i = 0
-    for r in self.rw.rules():
-      if any(r.match(s) for s in action.steps):
-        cat.append(i)
-      i = i + 1
-    return cat
+    return transitions.getCategories(action, self.rw.rules())
 
   def calculatePH(self):
     allHypotheses = {}
@@ -229,64 +224,6 @@ class MainWindow(QMainWindow):
             item = self.createActionItem(action, cat, QRectF(x1, cat*Y+self.margin, x2-x1, Y-2*self.margin), colorOption)
           item.setToolTip("%s - %s: %s" % (action.startText, action.endText, ', '.join(action.steps)))
           self.scene.addItem(item)
-          
-  def addToMatrix(self, matrix, one, other, bidirectional=False):
-    for cc in self.getCategories(one):
-      for nc in self.getCategories(other):
-        matrix[cc][nc] += 1
-        if bidirectional:
-          matrix[nc][cc] += 1
-        
-  def fluxMatrix(self):
-    R = self.rw.rules()
-    n = len(R)
-    matrix = [[0 for r in R] for s in R]
-    actions = self.parser.actions
-    
-    for currentAction in actions:
-      
-      hasOverlap = False
-      
-      for previousAction in actions:
-        
-        if currentAction.start < previousAction.end and currentAction.start > previousAction.start:
-          hasOverlap = True
-          self.addToMatrix(matrix, previousAction, currentAction)
-          
-      if not hasOverlap:
-        lastActions = []
-        lastTime = 0
-        
-        for previousAction in actions:
-          if previousAction.end > lastTime and previousAction.end < currentAction.start:
-            lastTime = previousAction.end
-            lastActions = [previousAction];
-          elif previousAction.end == lastTime:
-            lastActions.append(previousAction);
-        
-        for lastAction in lastActions:
-          self.addToMatrix(matrix, lastAction, currentAction)
-    return matrix
-
-  def overlapMatrix(self):
-    R = self.rw.rules()
-    n = len(R)
-    matrix = [[0 for r in R] for s in R]
-    actions = self.parser.actions
-    
-    for action in actions:
-      cat = self.getCategories(action)
-      if len(cat) > 1:
-        self.addToMatrix(matrix, action, action)
-    
-    for i in range(len(actions)):
-      currentAction = actions[i]
-      for j in range(i):
-        previousAction = actions[j]
-        if currentAction.start < previousAction.end:
-          self.addToMatrix(matrix, previousAction, currentAction, bidirectional=True)
-    
-    return matrix
 
   def displayHistogram(self):
     R = self.rw.rules()
