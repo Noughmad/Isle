@@ -465,16 +465,18 @@ class MainWindow(QMainWindow):
     image.save(name)
     
   def convertSvgToEps(self, image_name):
-    call(['inkscape', '-f', image_name + '.svg', '-E', image_name + '.eps', '--export-latex'])
+    call(['inkscape', '-f', image_name + '.svg', '-A', image_name + '.pdf', '--export-latex'])
     
   def loadTranscriptionAndGenerateGraphs(self, transitions_file, image_file, latex):
     self.loadFileByName(transitions_file)
     
+    self.scene.clear()
     self.displayTimeline()
     self.saveAsSvg(image_file + '_timeline.svg')
     if latex:
       self.convertSvgToEps(image_file + '_timeline')
     
+    self.scene.clear()
     self.displayCycle()
     self.saveAsSvg(image_file + '_cycle.svg')
     if latex:
