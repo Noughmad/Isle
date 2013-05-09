@@ -24,7 +24,10 @@ from lib.parser import *
 from view import *
 from ruleswidget import *
 from optionswidget import *
+from autodialog import AutoDialog
 from lib import transitions
+
+from subprocess import call
 
 import re
 import chardet
@@ -119,6 +122,10 @@ class MainWindow(QMainWindow):
     save = QAction('Export image', self)
     save.triggered.connect(self.saveImage)
     imageMenu.addAction(save)
+    
+    generate = QAction("Generate all images", self)
+    generate.triggered.connect(self.loadAndGenerateAll)
+    imageMenu.addAction(generate)
 
   def loadFile(self):
     name = QFileDialog.getOpenFileName(self, None, None, "HTML Files (*.html *.htm *.xhtml *.xml)")
@@ -129,7 +136,7 @@ class MainWindow(QMainWindow):
     with open(name, 'rb') as f:
       content = f.read()
       encoding = chardet.detect(content)['encoding']
-      self.parser.actions = []
+      self.parser = Parser()
       self.parser.feed(content.decode(encoding))
     self.calculatePH()
     self.fixActionTimes()
@@ -456,3 +463,35 @@ class MainWindow(QMainWindow):
     self.scene.render(painter)
     painter.end()
     image.save(name)
+    
+  def convertSvgToEps(self, image_name):
+    call(['inkscape', '-f', image_name + '.svg', '-E', image_name + '.eps', '--export-latex'])
+    
+  def loadTranscriptionAndGenerateGraphs(self, transitions_file, image_file, latex):
+    self.loadFileByName(transitions_file)
+    
+    self.displayTimeline()
+    self.saveAsSvg(image_file + '_timeline.svg')
+    if latex:
+      self.convertSvgToEps(image_file + '_timeline')
+    
+    self.displayCycle()
+    self.saveAsSvg(image_file + '_cycle.svg')
+    if latex:
+      self.convertSvgToEps(image_file + '_cycle')
+    
+  def loadAndGenerateAll(self):
+    dialog = AutoDialog()
+    if (dialog.exec_() == QDialog.Accepted):
+      trans_dir = QDir(dialog.transiption_folder())
+      image_dir = dialog.image_folder()
+      latex = dialog.generateLatex()
+      
+      for info in trans_dir.entryInfoList(["*.html"]):
+        qDebug(info.absoluteFilePath())
+        trans_file = info.absoluteFilePath()
+        base = info.baseName().replace('transcription_', '')
+        image_out = image_dir + '/' + base
+        self.loadTranscriptionAndGenerateGraphs(trans_file, image_out, latex)
+      
+    
