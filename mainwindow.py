@@ -195,7 +195,7 @@ class MainWindow(QMainWindow):
     
     tab = self.optionsWidget.ui.tabWidget.currentIndex()
     if tab == 0:
-      self.displayTimeline()
+      self.displayTimeline(self.optionsWidget.colorOption())
     elif tab == 1:
       self.displayHistogram()
     else:
@@ -203,7 +203,7 @@ class MainWindow(QMainWindow):
       
     self.scene.setSceneRect(self.scene.itemsBoundingRect())
     
-  def displayTimeline(self):
+  def displayTimeline(self, colorOption):
 
     offset = self.parser.actions[0].start
     endTime = self.parser.actions[-1].end - offset
@@ -214,7 +214,6 @@ class MainWindow(QMainWindow):
 
     self.drawAxes(endTime, len(self.rw.rules()), X, Y)
 
-    colorOption = self.optionsWidget.colorOption()
     for action in self.parser.actions:
       x1 = (action.start - offset) * X
       x2 = (action.end - offset) * X
@@ -470,14 +469,23 @@ class MainWindow(QMainWindow):
   def loadTranscriptionAndGenerateGraphs(self, transitions_file, image_file, latex):
     self.loadFileByName(transitions_file)
     
-    self.scene.clear()
-    self.displayTimeline()
-    self.saveAsSvg(image_file + '_timeline.svg')
-    if latex:
-      self.convertSvgToEps(image_file + '_timeline')
+    colorings = {
+      COLOR_STEP : 'step',
+      COLOR_PERSON : 'person',
+      COLOR_HYPOTHESIS : 'hypothesis',
+    }
+    
+    for color_option, name in colorings.items():
+      self.scene.clear()
+      self.displayTimeline(color_option)
+      self.scene.setSceneRect(self.scene.itemsBoundingRect())
+      self.saveAsSvg(image_file + '_timeline_' + name + '.svg')
+      if latex:
+        self.convertSvgToEps(image_file + '_timeline_' + name)
     
     self.scene.clear()
     self.displayCycle()
+    self.scene.setSceneRect(self.scene.itemsBoundingRect())
     self.saveAsSvg(image_file + '_cycle.svg')
     if latex:
       self.convertSvgToEps(image_file + '_cycle')
