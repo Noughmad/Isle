@@ -184,7 +184,11 @@ class MainWindow(QMainWindow):
     if tab == 0:
       self.displayTimeline(self.optionsWidget.colorOption())
     elif tab == 1:
-      self.displayCycle()
+      
+      if self.optionsWidget.ui.transitionsRadioButton.isChecked():
+        self.displayCycle(self._fluxMatrix, True)
+      else:
+        self.displayCycle(self._overlapMatrix, False)
     else:
       self.displayExpertivity()
       
@@ -329,7 +333,7 @@ class MainWindow(QMainWindow):
     item.setBrush(Qt.black)
     self.scene.addItem(item)
       
-  def displayCycle(self):
+  def displayCycle(self, matrix, use_flux):
     n = len(self.rw.rules())
     R = self.optionsWidget.ui.cycleRadiusSlider.value()
     T = self.optionsWidget.ui.thicknessSlider.value() / 66
@@ -342,13 +346,6 @@ class MainWindow(QMainWindow):
       'color' : categoryColor(i) if use_color else Qt.darkGray,
       'name' : self.rw.rules()[i].name
     } for i in range(n)]
-    
-    use_flux = self.optionsWidget.ui.transitionsRadioButton.isChecked()
-    
-    if use_flux:
-      matrix = self._fluxMatrix
-    else:
-      matrix = self._overlapMatrix
 
     for source in range(n):
       for destination in range(source):
@@ -542,12 +539,20 @@ class MainWindow(QMainWindow):
         self.convertSvgToEps(image_file + '_timeline_' + name)
     
     self.scene.clear()
-    self.displayCycle()
+    self.displayCycle(self._fluxMatrix, True)
     self.scene.setSceneRect(self.scene.itemsBoundingRect())
-    self.saveAsSvg(image_file + '_cycle.svg')
-    self.saveAsImage(image_file + '_cycle.jpg')
+    self.saveAsSvg(image_file + '_cycle_transitions.svg')
+    self.saveAsImage(image_file + '_cycle_transitions.jpg')
     if latex:
-      self.convertSvgToEps(image_file + '_cycle')
+      self.convertSvgToEps(image_file + '_cycle_transitions')
+    
+    self.scene.clear()
+    self.displayCycle(self._overlapMatrix, False)
+    self.scene.setSceneRect(self.scene.itemsBoundingRect())
+    self.saveAsSvg(image_file + '_cycle_overlap.svg')
+    self.saveAsImage(image_file + '_cycle_overlap.jpg')
+    if latex:
+      self.convertSvgToEps(image_file + '_cycle_overlap')
       
     self.scene.clear()
     self.displayExpertivity()
