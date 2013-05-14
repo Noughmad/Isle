@@ -31,10 +31,12 @@ class ExpertivityDialog(QDialog):
     s = QSettings()
     s.beginGroup('Expertivity')
     for i in range(R):
-      s.beginGroup(str(i))
+      s.beginGroup('Row%d' % i)
       for j in range(R):
         if j != i:
-          self.ui.tableWidget.setItem(i, j, QTableWidgetItem(str(s.value(str(j), 0, float))))
+          self.ui.tableWidget.setItem(i, j, QTableWidgetItem(str(s.value('Column%d' % j, 0, float))))
+      s.endGroup()
+    s.endGroup()
     
     self.ui.tableWidget.itemChanged.connect(self.recalculateExpertivity)
     self.recalculateExpertivity();
@@ -64,7 +66,9 @@ class ExpertivityDialog(QDialog):
     s = QSettings()
     s.beginGroup('Expertivity')
     for i in range(R):
-      s.beginGroup(str(i))
+      s.beginGroup('Row%d' % i)
       for j in range(R):
         if j != i:
-          s.setValue(str(j), self.getWeightAt(i, j))
+          s.setValue('Column%d' % j, self.getWeightAt(i, j))
+      s.endGroup()
+    s.endGroup()

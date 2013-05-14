@@ -18,8 +18,10 @@ def loadWeights(R):
   s = QSettings()
   s.beginGroup('Expertivity')
   for i in range(R):
-    s.beginGroup(str(i))
+    s.beginGroup('Row%d' % i)
     for j in range(R):
       if j != i:
-        matrix[i][j] = s.value(str(j), 0, float)
+        matrix[i][j] = s.value('Column%d' % j, 0, float)
+    s.endGroup()
+  s.endGroup()
   return matrix
