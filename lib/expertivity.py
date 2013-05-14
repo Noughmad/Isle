@@ -9,8 +9,10 @@ def calculateExpertivity(fluxMatrix, weights):
     for j in range(R):
       if i != j:
         e += fluxMatrix[i][j] * weights[i][j]
-  e = float(e) / float(allTransitions)
-  return e
+  try:
+    return float(e) / float(allTransitions)
+  except ZeroDivisionError:
+    return 0
 
 def loadWeights(R):
   matrix = [[0 for i in range(R)] for j in range(R)]
