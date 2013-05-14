@@ -58,13 +58,11 @@ class Parser(HTMLParser):
   def handle_endtag(self, tag):
     if tag == 'tr':
       if self.action:
-        print(self.action)
         self.actions.append(self.action)
         self.action = None
     elif tag == 'td':
       if self.column == 1:
         if self.action:
-          print(self.data)
           match = self.timeRe.search(self.data)
           if match:
             (self.action.startText, self.action.endText) = match.group(1, 2)
@@ -79,7 +77,6 @@ class Parser(HTMLParser):
           if phMatch:
             for s in phMatch.group(1).split(','):
               ph = s.strip()
-              print(ph)
               if ph.startswith('P'):
                 self.action.phenomena.append(int(ph[1:]))
               elif ph.startswith('H'):
