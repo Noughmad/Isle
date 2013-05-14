@@ -34,7 +34,7 @@ class ExpertivityDialog(QDialog):
       s.beginGroup(str(i))
       for j in range(R):
         if j != i:
-          self.ui.tableWidget.setItem(i, j, QTableWidgetItem(str(s.value(str(j), 0, int))))
+          self.ui.tableWidget.setItem(i, j, QTableWidgetItem(str(s.value(str(j), 0, float))))
     
     self.ui.tableWidget.itemChanged.connect(self.recalculateExpertivity)
     self.recalculateExpertivity();
@@ -43,7 +43,7 @@ class ExpertivityDialog(QDialog):
     item = self.ui.tableWidget.item(i, j)
     if item:
       try:
-        return int(item.text())
+        return float(item.text())
       except ValueError:
         pass
     
