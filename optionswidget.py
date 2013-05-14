@@ -21,6 +21,8 @@ from PyQt4.QtGui import *
 from PyQt4.QtCore import pyqtSignal, QSettings
 from ui_optionswidget import Ui_OptionsWidget
 
+from expertivitydialog import ExpertivityDialog
+
 COLOR_PERSON = 1
 COLOR_HYPOTHESIS = 2
 COLOR_STEP = 3

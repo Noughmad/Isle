@@ -98,6 +98,7 @@ class MainWindow(QMainWindow):
     dock = QDockWidget(self)
     self.optionsWidget = OptionsWidget(self)
     self.optionsWidget.optionsChanged.connect(self.displayIsle)
+    self.optionsWidget.ui.weightsButton.clicked.connect(self.showExpertivityDialog)
     dock.setWidget(self.optionsWidget)
     dock.setWindowTitle('Options')
     self.addDockWidget(Qt.LeftDockWidgetArea, dock)
@@ -261,7 +262,17 @@ class MainWindow(QMainWindow):
       points.append(e)
       
     for i in range(parts):
-      point = QGraphicsEllipseItem(T*(i+0.5)*X - 2, Height * Y - points[i]*Y*yScale - 2, 4, 4)
+      point = QGraphicsEllipseItem(T*(i+0.5)*X - 3, Height * Y - points[i]*Y*yScale - 3, 6, 6)
+      point.setBrush(QBrush(Qt.red))
+      point.setPen(QPen(Qt.NoPen))
+      if (i != 0):  
+        line = QGraphicsLineItem(T*(i-0.5)*X, Height * Y - points[i-1]*Y*yScale, T*(i+0.5)*X, Height * Y - points[i]*Y*yScale)
+        pen = QPen()
+        pen.setColor(Qt.red)
+        pen.setWidth(3)
+        line.setPen(pen)
+        self.scene.addItem(line)
+      
       tick = QGraphicsLineItem((i+1)*T*X, Height*Y + 5, (i+1)*T*X, Height*Y + 1)
       t = T*(i+1)
       minutes = int(t / 60)
@@ -275,8 +286,7 @@ class MainWindow(QMainWindow):
       
     label = QGraphicsTextItem('00:00')
     label.setPos(-22, Height*Y + 5)
-    self.scene.addItem(label)                          
-        
+    self.scene.addItem(label)
 
   def drawArrow(self, line, size, r1, r2):
     P = self.optionsWidget.ui.arrowPositionSlider.value() / 99
@@ -524,3 +534,4 @@ class MainWindow(QMainWindow):
     dialog = ExpertivityDialog(self.rw.rules(), self._fluxMatrix)
     if dialog.exec_() == QDialog.Accepted:
       dialog.saveOptions()
+      self.displayIsle()

@@ -332,9 +332,9 @@
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_8">
        <item>
-        <widget class="QPushButton" name="pushButton">
+        <widget class="QPushButton" name="weightsButton">
          <property name="text">
-          <string>Configure expertivity weights</string>
+          <string>Configure Weights</string>
          </property>
         </widget>
        </item>
