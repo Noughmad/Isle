@@ -536,6 +536,13 @@ class MainWindow(QMainWindow):
     self.saveAsSvg(image_file + '_cycle.svg')
     if latex:
       self.convertSvgToEps(image_file + '_cycle')
+      
+    self.scene.clear()
+    self.displayExpertivity()
+    self.scene.setSceneRect(self.scene.itemsBoundingRect())
+    self.saveAsSvg(image_file + '_expertivity.svg')
+    if latex:
+      self.convertSvgToEps(image_file + '_expertivity')
     
   def loadAndGenerateAll(self):
     dialog = AutoDialog()
