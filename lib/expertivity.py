@@ -21,5 +21,5 @@ def loadWeights(R):
     s.beginGroup(str(i))
     for j in range(R):
       if j != i:
-        matrix[i][j] = s.value(str(j), 0, int)
+        matrix[i][j] = s.value(str(j), 0, float)
   return matrix
