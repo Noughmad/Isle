@@ -25,9 +25,10 @@ from view import *
 from ruleswidget import *
 from optionswidget import *
 from autodialog import AutoDialog
+from expertivitydialog import ExpertivityDialog
 from lib import transitions
 
-from subprocess import call
+import subprocess
 
 import re
 import chardet
@@ -126,7 +127,11 @@ class MainWindow(QMainWindow):
     generate = QAction("Generate all images", self)
     generate.triggered.connect(self.loadAndGenerateAll)
     imageMenu.addAction(generate)
-
+    
+    expertivity = QAction("Calculate Expertivity", self)
+    expertivity.triggered.connect(self.showExpertivityDialog)
+    imageMenu.addAction(expertivity)
+    
   def loadFile(self):
     name = QFileDialog.getOpenFileName(self, None, None, "HTML Files (*.html *.htm *.xhtml *.xml)")
     if name:
@@ -464,7 +469,7 @@ class MainWindow(QMainWindow):
     image.save(name)
     
   def convertSvgToEps(self, image_name):
-    call(['inkscape', '-f', image_name + '.svg', '-A', image_name + '.pdf', '--export-latex'])
+    subprocess.call(['inkscape', '-f', image_name + '.svg', '-A', image_name + '.pdf', '--export-latex'])
     
   def loadTranscriptionAndGenerateGraphs(self, transitions_file, image_file, latex):
     self.loadFileByName(transitions_file)
@@ -504,4 +509,6 @@ class MainWindow(QMainWindow):
         image_out = image_dir + '/' + base
         self.loadTranscriptionAndGenerateGraphs(trans_file, image_out, latex)
       
-    
+  def showExpertivityDialog(self):
+    dialog = ExpertivityDialog(self.rw.rules(), self._fluxMatrix)
+    dialog.exec_()
