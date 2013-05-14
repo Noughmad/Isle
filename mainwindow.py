@@ -217,7 +217,12 @@ class MainWindow(QMainWindow):
     Y = self.optionsWidget.ui.yScaleSlider.value()
     self.margin = Y / 10
 
-    self.drawAxes(endTime, len(self.rw.rules()), X, Y)
+    R = len(self.rw.rules())
+    self.drawAxes(endTime, R, X, Y)
+    
+    timeLabel = QGraphicsTextItem("Time [min]")
+    timeLabel.setPos(X * endTime * 0.9, Y * (R+0.75))
+    self.scene.addItem(timeLabel)
 
     for action in self.parser.actions:
       x1 = (action.start - offset) * X
