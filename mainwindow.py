@@ -243,8 +243,20 @@ class MainWindow(QMainWindow):
       points.append(e)
       
     yMax = max(points)
-    if yMax < 0.01:
-      yMax = 0.01
+    if yMax < 0.001:
+      yMax = 0.001
+      
+    l = int(math.floor(math.log10(yMax)))
+    yMax = round(yMax, -l)
+    if (yMax < max(points)):
+      yMax = yMax + math.pow(10, l)
+      l = int(math.floor(math.log10(yMax)))
+      
+    if (yMax / math.pow(10, l)) >= 5:
+      step = math.pow(10, l)
+    else:
+      step = yMax / 10
+    
     yScale = Height / yMax
 
     X = self.optionsWidget.ui.xScaleSlider.value() / 30
@@ -287,6 +299,15 @@ class MainWindow(QMainWindow):
     label = QGraphicsTextItem('00:00')
     label.setPos(-22, Height*Y + 5)
     self.scene.addItem(label)
+    
+    y = 0
+    while y <= yMax:
+      tick = QGraphicsLineItem(-5, (Height - y * yScale) * Y, 6, (Height - y * yScale) * Y)
+      label = QGraphicsTextItem("%g" % y)
+      label.setPos(-label.boundingRect().width() - 10, (Height - y * yScale) * Y - label.boundingRect().height()/2)
+      self.scene.addItem(tick)
+      self.scene.addItem(label)
+      y += step
 
   def drawArrow(self, line, size, r1, r2):
     P = self.optionsWidget.ui.arrowPositionSlider.value() / 99
