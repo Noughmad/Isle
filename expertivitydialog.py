@@ -53,7 +53,7 @@ class ExpertivityDialog(QDialog):
 
   def getWeights(self):
     R = len(self.rules)
-    weights = [[self.getWeightAt(i, j) for i in range(R)] for j in range(R)]
+    weights = [[self.getWeightAt(i, j) for j in range(R)] for i in range(R)]
     return weights
     
   def recalculateExpertivity(self):
