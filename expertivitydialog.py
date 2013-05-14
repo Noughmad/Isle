@@ -58,3 +58,13 @@ class ExpertivityDialog(QDialog):
     w = self.getWeights()
     expertivity = calculateExpertivity(self.flux, w)
     self.ui.label.setText("Expertivity: %g" % expertivity)
+    
+  def saveOptions(self):
+    R = len(self.rules)
+    s = QSettings()
+    s.beginGroup('Expertivity')
+    for i in range(R):
+      s.beginGroup(str(i))
+      for j in range(R):
+        if j != i:
+          s.setValue(str(j), self.getWeightAt(i, j))

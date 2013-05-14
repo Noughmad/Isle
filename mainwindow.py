@@ -522,4 +522,5 @@ class MainWindow(QMainWindow):
       
   def showExpertivityDialog(self):
     dialog = ExpertivityDialog(self.rw.rules(), self._fluxMatrix)
-    dialog.exec_()
+    if dialog.exec_() == QDialog.Accepted:
+      dialog.saveOptions()
