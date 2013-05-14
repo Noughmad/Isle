@@ -107,8 +107,6 @@ class MainWindow(QMainWindow):
     dock.setWindowTitle('Options')
     self.addDockWidget(Qt.LeftDockWidgetArea, dock)
     
-    self.optionsWidget.ui.sourceStepComboBox.setModel(self.rw.model)
-
   def createActions(self):
     fileMenu = self.menuBar().addMenu("&File")
     load = QAction('Open', self)

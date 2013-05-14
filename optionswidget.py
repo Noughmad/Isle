@@ -41,14 +41,13 @@ class OptionsWidget(QWidget):
     self.ui = Ui_OptionsWidget()
     self.ui.setupUi(self)
 
-    for check in [self.ui.colorByPerson, self.ui.colorByHypothesis, self.ui.colorByStep, self.ui.showJudgment, self.ui.coloredStepsCheck, self.ui.transitionsRadioButton, self.ui.overlapRadioButton]:
+    for check in [self.ui.colorByPerson, self.ui.colorByHypothesis, self.ui.colorByStep, self.ui.showJudgment, self.ui.coloredStepsCheck, self.ui.transitionsRadioButton, self.ui.overlapRadioButton, self.ui.showGridLines]:
       check.toggled.connect(self.optionsChanged)
     
     for slider in [self.ui.cycleRadiusSlider, self.ui.thicknessSlider, self.ui.stepSizeSlider, self.ui.arrowPositionSlider, self.ui.xScaleSlider, self.ui.yScaleSlider, self.ui.arrowPointSlider, self.ui.arrowSizeSlider]:
       slider.valueChanged.connect(self.optionsChanged)
     
     self.ui.tabWidget.currentChanged.connect(self.optionsChanged)
-    self.ui.sourceStepComboBox.currentIndexChanged.connect(self.optionsChanged)
     
     self.optionsChanged.connect(self.saveOptions)
     self.loadOptions()
@@ -91,10 +90,6 @@ class OptionsWidget(QWidget):
     self.ui.yScaleSlider.setValue(s.value("ScaleY", 40, int))
     s.endGroup()
     
-    s.beginGroup("Histogram")
-    self.ui.sourceStepComboBox.setCurrentIndex(s.value("SourceStep", 0, int))
-    s.endGroup()
-    
     s.beginGroup("Cycle")
     self.ui.coloredStepsCheck.setChecked(s.value("Color", True, bool))
     if s.value("Connections") == "Overlap":
@@ -127,10 +122,6 @@ class OptionsWidget(QWidget):
     s.setValue("ScaleY", self.ui.yScaleSlider.value())
     s.setValue("JudgmentMarkers", self.ui.showJudgment.isChecked())
     s.setValue("GridLines", self.ui.showGridLines.isChecked())
-    s.endGroup()
-    
-    s.beginGroup("Histogram")
-    s.setValue("SourceStep", self.ui.sourceStepComboBox.currentIndex())
     s.endGroup()
     
     s.beginGroup("Cycle")
