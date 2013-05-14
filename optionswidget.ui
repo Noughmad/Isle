@@ -17,7 +17,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>2</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="timelineTab">
       <attribute name="title">
@@ -107,6 +107,16 @@
         <widget class="QCheckBox" name="showJudgment">
          <property name="text">
           <string>Show Judgment Markers</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="showGridLines">
+         <property name="text">
+          <string>Show grid lines</string>
          </property>
          <property name="checked">
           <bool>true</bool>

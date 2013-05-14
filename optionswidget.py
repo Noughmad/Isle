@@ -64,6 +64,9 @@ class OptionsWidget(QWidget):
   def showJudgment(self):
     return self.ui.showJudgment.isChecked()
   
+  def showGridLines(self):
+    return self.ui.showGridLines.isChecked()
+  
   def loadOptions(self):
     block = self.blockSignals(True)
     
@@ -83,6 +86,7 @@ class OptionsWidget(QWidget):
     else:
       self.ui.colorByStep.setChecked(True)
     self.ui.showJudgment.setChecked(s.value("JudgmentMarkers", True, bool))
+    self.ui.showGridLines.setChecked(s.value("GridLines", True, bool))
     self.ui.xScaleSlider.setValue(s.value("ScaleX", 40, int))
     self.ui.yScaleSlider.setValue(s.value("ScaleY", 40, int))
     s.endGroup()
@@ -122,6 +126,7 @@ class OptionsWidget(QWidget):
     s.setValue("ScaleX", self.ui.xScaleSlider.value())
     s.setValue("ScaleY", self.ui.yScaleSlider.value())
     s.setValue("JudgmentMarkers", self.ui.showJudgment.isChecked())
+    s.setValue("GridLines", self.ui.showGridLines.isChecked())
     s.endGroup()
     
     s.beginGroup("Histogram")

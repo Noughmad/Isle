@@ -219,6 +219,12 @@ class MainWindow(QMainWindow):
 
     R = len(self.rw.rules())
     self.drawAxes(endTime, R, X, Y)
+    if self.optionsWidget.showGridLines():
+      for i in range(R):
+        line = QGraphicsLineItem(0, (i+0.5)*Y, endTime*X, (i+0.5)*Y)
+        line.setPen(QPen(Qt.gray))
+        self.scene.addItem(line)
+      
     
     timeLabel = QGraphicsTextItem("Time [min]")
     timeLabel.setPos(X * endTime * 0.9, Y * (R+0.75))
