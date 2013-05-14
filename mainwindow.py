@@ -537,6 +537,7 @@ class MainWindow(QMainWindow):
       self.displayTimeline(color_option)
       self.scene.setSceneRect(self.scene.itemsBoundingRect())
       self.saveAsSvg(image_file + '_timeline_' + name + '.svg')
+      self.saveAsImage(image_file + '_timeline_' + name + '.jpg')
       if latex:
         self.convertSvgToEps(image_file + '_timeline_' + name)
     
@@ -544,6 +545,7 @@ class MainWindow(QMainWindow):
     self.displayCycle()
     self.scene.setSceneRect(self.scene.itemsBoundingRect())
     self.saveAsSvg(image_file + '_cycle.svg')
+    self.saveAsImage(image_file + '_cycle.jpg')
     if latex:
       self.convertSvgToEps(image_file + '_cycle')
       
@@ -551,6 +553,7 @@ class MainWindow(QMainWindow):
     self.displayExpertivity()
     self.scene.setSceneRect(self.scene.itemsBoundingRect())
     self.saveAsSvg(image_file + '_expertivity.svg')
+    self.saveAsImage(image_file + '_expertivity.jpg')
     if latex:
       self.convertSvgToEps(image_file + '_expertivity')
     
