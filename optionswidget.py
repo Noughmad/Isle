@@ -44,7 +44,7 @@ class OptionsWidget(QWidget):
     for check in [self.ui.colorByPerson, self.ui.colorByHypothesis, self.ui.colorByStep, self.ui.showJudgment, self.ui.coloredStepsCheck, self.ui.transitionsRadioButton, self.ui.overlapRadioButton, self.ui.showGridLines]:
       check.toggled.connect(self.optionsChanged)
     
-    for slider in [self.ui.cycleRadiusSlider, self.ui.thicknessSlider, self.ui.stepSizeSlider, self.ui.arrowPositionSlider, self.ui.xScaleSlider, self.ui.yScaleSlider, self.ui.arrowPointSlider, self.ui.arrowSizeSlider]:
+    for slider in [self.ui.cycleRadiusSlider, self.ui.thicknessSlider, self.ui.stepSizeSlider, self.ui.arrowPositionSlider, self.ui.xScaleSlider, self.ui.yScaleSlider, self.ui.arrowPointSlider, self.ui.arrowSizeSlider, self.ui.numberOfParts]:
       slider.valueChanged.connect(self.optionsChanged)
     
     self.ui.tabWidget.currentChanged.connect(self.optionsChanged)
@@ -102,6 +102,11 @@ class OptionsWidget(QWidget):
     self.ui.arrowPositionSlider.setValue(s.value("ArrowPosition", 70, int))
     self.ui.arrowPointSlider.setValue(s.value("ArrowPoint", 5, int))
     self.ui.arrowSizeSlider.setValue(s.value("ArrowSize", 50, int))
+    s.endGroup()
+    
+    s.beginGroup("Expertivity")
+    self.ui.numberOfParts.setValue(s.value("NumberOfParts", 10, int))
+    s.endGroup()
     
     self.blockSignals(block)
     self.optionsChanged.emit()
@@ -133,6 +138,10 @@ class OptionsWidget(QWidget):
     s.setValue("ArrowPosition", self.ui.arrowPositionSlider.value())
     s.setValue("ArrowPoint", self.ui.arrowPointSlider.value())
     s.setValue("ArrowSize", self.ui.arrowSizeSlider.value())
+    s.endGroup()
+    
+    s.beginGroup("Expertivity")
+    s.setValue("NumberOfParts", self.ui.numberOfParts.value())
     s.endGroup()
     
     s.endGroup()

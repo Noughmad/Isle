@@ -26,7 +26,8 @@ from ruleswidget import *
 from optionswidget import *
 from autodialog import AutoDialog
 from expertivitydialog import ExpertivityDialog
-from lib import transitions
+
+from lib import transitions, expertivity
 
 import subprocess
 
@@ -34,12 +35,6 @@ import re
 import chardet
 import math
 
-def parseTime(time):
-  match = re.search('(\d+)[\.:](\d+)', time)
-  if match:
-    return 60 * int(match.group(1)) + int(match.group(2))
-  else:
-    return 0
 
 def arrow(y = 0):
   polygon = QPolygonF(4)
@@ -142,7 +137,6 @@ class MainWindow(QMainWindow):
       self.parser = Parser()
       self.parser.feed(content.decode(encoding))
     self.calculatePH()
-    self.fixActionTimes()
     self._fluxMatrix = transitions.fluxMatrix(self.parser.actions, self.rw.rules())
     self._overlapMatrix = transitions.overlapMatrix(self.parser.actions, self.rw.rules())
     self.displayIsle()
@@ -173,17 +167,6 @@ class MainWindow(QMainWindow):
         i = i + 1
       self.hypoCounts[p] = len(hl)
       
-  def fixActionTimes(self):
-    offset = 0
-    for i in range(len(self.parser.actions)):
-      s = parseTime(self.parser.actions[i].startText)
-      e = parseTime(self.parser.actions[i].endText)
-      
-      if i > 1 and s + offset < (self.parser.actions[i-1].start - 1800):
-        offset = self.parser.actions[i-1].end
-        
-      self.parser.actions[i].start = s + offset
-      self.parser.actions[i].end = e + offset
 
   def displayIsle(self):
     self.scene.clear()
@@ -200,9 +183,9 @@ class MainWindow(QMainWindow):
     if tab == 0:
       self.displayTimeline(self.optionsWidget.colorOption())
     elif tab == 1:
-      self.displayHistogram()
-    else:
       self.displayCycle()
+    else:
+      self.displayExpertivity()
       
     self.scene.setSceneRect(self.scene.itemsBoundingRect())
     
@@ -244,22 +227,57 @@ class MainWindow(QMainWindow):
             item = self.createActionItem(action, cat, QRectF(x1, cat*Y+self.margin, x2-x1, Y-2*self.margin), colorOption)
           item.setToolTip("%s - %s: %s" % (action.startText, action.endText, ', '.join(action.steps)))
           self.scene.addItem(item)
-
-  def displayHistogram(self):
-    R = self.rw.rules()
-    cat_index = self.optionsWidget.ui.sourceStepComboBox.currentIndex()
+          
+  def displayExpertivity(self):
+    parts = self.optionsWidget.ui.numberOfParts.value()
+    T = self.parser.duration() / parts
+    Height = 10.0
     
-    values = self._fluxMatrix[cat_index]
-    for j in range(len(R)):
-      print(R[j].name + " => " + str(values[j]))
+    R = len(self.rw.rules())
+    weights = expertivity.loadWeights(R)
+    points = []
+    for actions in self.parser.get_actions(parts):
+      flux = transitions.fluxMatrix(actions, self.rw.rules())
+      e = expertivity.calculateExpertivity(flux, weights)
+      points.append(e)
       
-    yMax = 50 * max(values)
-    self.drawAxes(len(self.rw.rules()) * 100, yMax, 1, 100, histogramMax=max(values))
-    for i in range(len(R)):
-      item = QGraphicsRectItem(i * 100 + 10, yMax - values[i] * 50, 80, values[i] * 50)
-      item.setBrush(Qt.blue)
-      self.scene.addItem(item)
+    yMax = max(points)
+    if yMax < 0.01:
+      yMax = 0.01
+    yScale = Height / yMax
+
+    X = self.optionsWidget.ui.xScaleSlider.value() / 30
+    Y = self.optionsWidget.ui.yScaleSlider.value()
+
+    self.drawAxes(parts * T, Height, X, Y, labels=False)
+    timeLabel = QGraphicsTextItem("Time [min]")
+    timeLabel.setPos(X * T * parts * 0.9, Y * (Height+0.75))
+    self.scene.addItem(timeLabel)
+    
+    
+    for actions in self.parser.get_actions(parts):
+      flux = transitions.fluxMatrix(actions, self.rw.rules())
+      e = expertivity.calculateExpertivity(flux, weights)
+      points.append(e)
       
+    for i in range(parts):
+      point = QGraphicsEllipseItem(T*(i+0.5)*X - 2, Height * Y - points[i]*Y*yScale - 2, 4, 4)
+      tick = QGraphicsLineItem((i+1)*T*X, Height*Y + 5, (i+1)*T*X, Height*Y + 1)
+      t = T*(i+1)
+      minutes = int(t / 60)
+      secs = int(t) % 60
+      label = QGraphicsTextItem('%.2d:%.2d' % (minutes, secs))
+      label.setPos((i+1)*T*X - 22, Height*Y + 5)
+      
+      self.scene.addItem(point)
+      self.scene.addItem(tick)
+      self.scene.addItem(label)
+      
+    label = QGraphicsTextItem('00:00')
+    label.setPos(-22, Height*Y + 5)
+    self.scene.addItem(label)                          
+        
+
   def drawArrow(self, line, size, r1, r2):
     P = self.optionsWidget.ui.arrowPositionSlider.value() / 99
     position = line.pointAt(r1 / line.length()) * (1-P) + line.pointAt(1 - r2 / line.length()) * P
@@ -399,7 +417,7 @@ class MainWindow(QMainWindow):
         times[cat] += (x2-x1)
     return [t*3600/total for t in times]
 
-  def drawAxes(self, xMax, yMax, X, Y, histogramMax = 0):
+  def drawAxes(self, xMax, yMax, X, Y, labels = True):
     xAxis = QGraphicsLineItem(-10, yMax*Y, xMax*X + 30, yMax*Y)
     yAxis = QGraphicsLineItem(0, yMax*Y + 10, 0, -30)
 
@@ -408,23 +426,7 @@ class MainWindow(QMainWindow):
     xArrow.setRotation(-90)
     xArrow.setBrush(QBrush(Qt.black))
 
-    if histogramMax:
-      i = 0
-      for rule in self.rw.rules():
-        tick = QGraphicsLineItem(i*100, yMax - 5, i*100, yMax + 6, xAxis)
-        label = QGraphicsTextItem(rule.name, xAxis)
-        # label.setTextWidth(150)
-        label.setPos(50 + i * 100, yMax + 4)
-        label.setRotation(60)
-        i = i + 1
-      
-      unitHeight = yMax / histogramMax
-      for v in range(histogramMax+1):
-        tick = QGraphicsLineItem(-5, yMax - v * unitHeight, 5, yMax - v * unitHeight)
-        label = QGraphicsTextItem(str(v), yAxis)
-        label.setPos(-20, yMax - v * unitHeight - label.boundingRect().height()/2)
-      
-    else:
+    if labels:
       for i in range(int(xMax/300+1)):
         tick = QGraphicsLineItem(i*300*X, yMax*Y + 5, i*300*X, yMax*Y + 1, xAxis)
         label = QGraphicsTextItem('%.2d:%.2d' % (i*5, 0), xAxis)

@@ -21,6 +21,13 @@ from html.parser import HTMLParser
 from lib.action import Action
 import re
 
+def parseTime(time):
+  match = re.search('(\d+)[\.:](\d+)', time)
+  if match:
+    return 60 * int(match.group(1)) + int(match.group(2))
+  else:
+    return 0
+
 class Parser(HTMLParser):
 
   def __init__(self):
@@ -97,3 +104,28 @@ class Parser(HTMLParser):
 
   def handle_data(self, data):
     self.data = self.data + data
+    
+  def get_actions(self, parts):
+    total = self.actions[-1].end
+    part_size = total / parts
+    for p in range(parts):
+      yield [a for a in self.actions if a.start <= (p+1) * part_size]
+      
+  def duration(self):
+    return self.actions[-1].end
+    
+  def fixActionTimes(self):
+    offset = -parseTime(self.actions[0].startText)
+    for i in range(len(self.actions)):
+      s = parseTime(self.actions[i].startText)
+      e = parseTime(self.actions[i].endText)
+      
+      if i > 1 and s + offset < (self.actions[i-1].start - 1800):
+        offset = self.actions[i-1].end
+        
+      self.actions[i].start = s + offset
+      self.actions[i].end = e + offset
+        
+  def feed(self, data):
+    HTMLParser.feed(self, data)
+    self.fixActionTimes()
