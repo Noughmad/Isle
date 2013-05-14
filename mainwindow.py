@@ -228,7 +228,7 @@ class MainWindow(QMainWindow):
             item = self.createActionItem(action, cat, QRectF(x1, cat*Y+self.margin, x2-x1, Y-2*self.margin), colorOption)
           item.setToolTip("%s - %s: %s" % (action.startText, action.endText, ', '.join(action.steps)))
           self.scene.addItem(item)
-          
+
   def displayExpertivity(self):
     parts = self.optionsWidget.ui.numberOfParts.value()
     T = self.parser.duration() / parts
@@ -243,21 +243,37 @@ class MainWindow(QMainWindow):
       points.append(e)
       
     yMax = max(points)
-    if yMax < 0.001:
-      yMax = 0.001
-      
-    l = int(math.floor(math.log10(yMax)))
-    yMax = round(yMax, -l)
-    if (yMax < max(points)):
-      yMax = yMax + math.pow(10, l)
-      l = int(math.floor(math.log10(yMax)))
-      
-    if (yMax / math.pow(10, l)) >= 5:
-      step = math.pow(10, l)
-    else:
-      step = yMax / 10
+    yMin = min(points)
     
-    yScale = Height / yMax
+    if yMax == yMin:
+      return
+    
+    lMax = int(math.floor(math.log10(abs(yMax))))
+    lMin = int(math.floor(math.log10(abs(yMin))))
+    l = max([lMax, lMin])
+    
+    rMax = round(yMax, -l)
+    rMin = round(yMin, -l)
+
+    if (rMin > yMin):
+      rMin -= math.pow(10, l)
+
+    if (rMax < yMax):
+      rMax += math.pow(10, l)
+
+    yMax = rMax
+    yMin = rMin
+
+    step = math.pow(10, l)
+    if step >= (yMax - yMin):
+      step /= 10
+    elif step >= (yMax - yMin) / 2:
+      step /= 5
+    elif step >= (yMax - yMin) / 5:
+      step /= 2
+      
+    
+    yScale = Height / (yMax - yMin)
 
     X = self.optionsWidget.ui.xScaleSlider.value() / 30
     Y = self.optionsWidget.ui.yScaleSlider.value()
@@ -266,19 +282,13 @@ class MainWindow(QMainWindow):
     timeLabel = QGraphicsTextItem("Time [min]")
     timeLabel.setPos(X * T * parts * 0.9, Y * (Height+0.75))
     self.scene.addItem(timeLabel)
-    
-    
-    for actions in self.parser.get_actions(parts):
-      flux = transitions.fluxMatrix(actions, self.rw.rules())
-      e = expertivity.calculateExpertivity(flux, weights)
-      points.append(e)
       
     for i in range(parts):
-      point = QGraphicsEllipseItem(T*(i+0.5)*X - 3, Height * Y - points[i]*Y*yScale - 3, 6, 6)
+      point = QGraphicsEllipseItem(T*(i+0.5)*X - 3, Height * Y - (points[i]-yMin)*Y*yScale - 3, 6, 6)
       point.setBrush(QBrush(Qt.red))
       point.setPen(QPen(Qt.NoPen))
       if (i != 0):  
-        line = QGraphicsLineItem(T*(i-0.5)*X, Height * Y - points[i-1]*Y*yScale, T*(i+0.5)*X, Height * Y - points[i]*Y*yScale)
+        line = QGraphicsLineItem(T*(i-0.5)*X, Height * Y - (points[i-1]-yMin)*Y*yScale, T*(i+0.5)*X, Height * Y - (points[i]-yMin)*Y*yScale)
         pen = QPen()
         pen.setColor(Qt.red)
         pen.setWidth(3)
@@ -300,10 +310,10 @@ class MainWindow(QMainWindow):
     label.setPos(-22, Height*Y + 5)
     self.scene.addItem(label)
     
-    y = 0
-    while y <= yMax:
+    y = 0.0
+    while y <= (yMax-yMin):
       tick = QGraphicsLineItem(-5, (Height - y * yScale) * Y, 6, (Height - y * yScale) * Y)
-      label = QGraphicsTextItem("%g" % y)
+      label = QGraphicsTextItem("%g" % (y + yMin))
       label.setPos(-label.boundingRect().width() - 10, (Height - y * yScale) * Y - label.boundingRect().height()/2)
       self.scene.addItem(tick)
       self.scene.addItem(label)
