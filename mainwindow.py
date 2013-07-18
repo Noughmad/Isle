@@ -534,7 +534,7 @@ class MainWindow(QMainWindow):
     image.save(name)
     
   def convertSvgToEps(self, image_name):
-    subprocess.call(['inkscape', '-f', image_name + '.svg', '-A', image_name + '.pdf', '--export-latex'])
+    subprocess.call(['inkscape', '-f', image_name + '.svg', '-A', image_name + '.pdf', '--export-latex', '--export-area-drawing'])
     
   def loadTranscriptionAndGenerateGraphs(self, transitions_file, image_file, latex):
     self.loadFileByName(transitions_file)
