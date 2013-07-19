@@ -166,18 +166,17 @@ class MainWindow(QMainWindow):
       if not p in allHypotheses:
         allHypotheses[p] = []
       for h in action.hypotheses:
-        allHypotheses[p].append(h)
+        if not h in allHypotheses[p]:
+          allHypotheses[p].append(h)
 
     self.hypoIndexes = {}
     self.hypoCounts = {}
     for p, hs in allHypotheses.items():
-      hl = list(set(hs))
-      hl.sort()
       i = 0
-      for h in hl:
+      for h in hs:
         self.hypoIndexes[h] = (p, i)
         i = i + 1
-      self.hypoCounts[p] = len(hl)
+      self.hypoCounts[p] = len(hs)
       
 
   def displayIsle(self):
@@ -452,11 +451,19 @@ class MainWindow(QMainWindow):
   def getHypothesisColor(self, hypothesis):
     (p, i) = self.hypoIndexes[hypothesis]
     n = self.hypoCounts[p]
-    i = i/max(1, n-1)
-    if p == 1:
-      return QColor(255, 255*i, 0)
+    
+    print("getHypothesisColor: %d => %d, %d | %d" % (hypothesis, p, i, n))
+    
+    if (i % 2) == 0:
+      f = float(i)/max([1, n]) * 0.5
     else:
-      return QColor(0, 255 - 255 * i + 100 * i * (1-i), 255*i + 100 * i * (1-i))
+      f = 0.5 + float(i)/max([1, n]) * 0.5
+    print("getHypothesisColor: %f" % f)
+
+    if p == 0:
+      return QColor.fromHsv(360 * f, 255, 255)
+    else:
+      return QColor(0, 255 - 255 * f + 100 * f * (1-f), 255*f + 100 * f * (1-f))
     
   def getCategoryTimes(self):
     total = self.parser.actions[-1].end - self.parser.actions[0].start
