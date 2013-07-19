@@ -49,6 +49,8 @@ class OptionsWidget(QWidget):
     
     for slider in [self.ui.cycleRadiusSlider, self.ui.thicknessSlider, self.ui.stepSizeSlider, self.ui.arrowPositionSlider, self.ui.xScaleSlider, self.ui.yScaleSlider, self.ui.arrowPointSlider, self.ui.arrowSizeSlider, self.ui.numberOfParts]:
       slider.valueChanged.connect(self.optionsChanged)
+      
+    self.ui.splitMinutes.valueChanged.connect(self.optionsChanged)
     
     self.ui.tabWidget.currentChanged.connect(self.optionsChanged)
     
@@ -94,6 +96,7 @@ class OptionsWidget(QWidget):
     self.ui.showGridLines.setChecked(s.value("GridLines", True, bool))
     self.ui.xScaleSlider.setValue(s.value("ScaleX", 40, int))
     self.ui.yScaleSlider.setValue(s.value("ScaleY", 40, int))
+    self.ui.splitMinutes.setValue(s.value("SplitMinutes", 35, int))
     s.endGroup()
     
     s.beginGroup("Cycle")
@@ -134,6 +137,7 @@ class OptionsWidget(QWidget):
     s.setValue("ScaleY", self.ui.yScaleSlider.value())
     s.setValue("JudgmentMarkers", self.ui.showJudgment.isChecked())
     s.setValue("GridLines", self.ui.showGridLines.isChecked())
+    s.setValue("SplitMinutes", self.ui.splitMinutes.value())
     s.endGroup()
     
     s.beginGroup("Cycle")

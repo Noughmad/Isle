@@ -213,7 +213,7 @@ class MainWindow(QMainWindow):
     Y = self.optionsWidget.ui.yScaleSlider.value()
     self.margin = Y / 10
     
-    SplitTime = 35 * 60
+    SplitTime = self.optionsWidget.ui.splitMinutes.value() * 60
     NumParts = math.ceil(float(endTime) / SplitTime)
     R = len(self.rw.rules())
     GraphHeight = (R + 2.5) * Y
