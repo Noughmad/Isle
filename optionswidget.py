@@ -44,7 +44,7 @@ class OptionsWidget(QWidget):
     self.ui = Ui_OptionsWidget()
     self.ui.setupUi(self)
 
-    for check in [self.ui.colorByPerson, self.ui.colorByHypothesis, self.ui.colorByStep, self.ui.showJudgment, self.ui.coloredStepsCheck, self.ui.transitionsRadioButton, self.ui.overlapRadioButton, self.ui.showGridLines]:
+    for check in [self.ui.colorByPerson, self.ui.colorByHypothesis, self.ui.colorByStep, self.ui.showJudgment, self.ui.coloredStepsCheck, self.ui.transitionsRadioButton, self.ui.overlapRadioButton, self.ui.showGridLines, self.ui.colorOnlyCone]:
       check.toggled.connect(self.optionsChanged)
     
     for slider in [self.ui.cycleRadiusSlider, self.ui.thicknessSlider, self.ui.stepSizeSlider, self.ui.arrowPositionSlider, self.ui.xScaleSlider, self.ui.yScaleSlider, self.ui.arrowPointSlider, self.ui.arrowSizeSlider, self.ui.numberOfParts]:
