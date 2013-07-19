@@ -511,14 +511,14 @@ class MainWindow(QMainWindow):
   def saveAsSvg(self, name):
     generator = QSvgGenerator()
     generator.setFileName(name)
-    generator.setSize(self.scene.sceneRect().size().toSize())
+    generator.setSize(self.scene.itemsBoundingRect().size().toSize())
     painter = QPainter()
     painter.begin(generator)
     self.scene.render(painter)
     painter.end()
 
   def saveAsImage(self, name):
-    image = QImage(self.scene.sceneRect().size().toSize(), QImage.Format_RGB32)
+    image = QImage(self.scene.itemsBoundingRect().size().toSize(), QImage.Format_RGB32)
     image.fill(Qt.white)
     painter = QPainter()
     painter.begin(image)
