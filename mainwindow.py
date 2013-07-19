@@ -212,36 +212,44 @@ class MainWindow(QMainWindow):
     X = self.optionsWidget.ui.xScaleSlider.value() / 30
     Y = self.optionsWidget.ui.yScaleSlider.value()
     self.margin = Y / 10
-
-    R = len(self.rw.rules())
-    self.drawAxes(endTime, R, X, Y)
-    if self.optionsWidget.showGridLines():
-      for i in range(R):
-        line = QGraphicsLineItem(0, (i+0.5)*Y, endTime*X, (i+0.5)*Y)
-        line.setPen(QPen(Qt.gray))
-        self.scene.addItem(line)
-      
     
-    timeLabel = QGraphicsTextItem("Time [min]")
-    timeLabel.setPos(X * endTime * 0.9, Y * (R+0.75))
-    self.scene.addItem(timeLabel)
-
-    for action in self.parser.actions:
-      x1 = (action.start - offset) * X
-      x2 = (action.end - offset) * X
-      categories = self.getCategories(action)
-      if categories:
-        for cat in categories:
-          rule = self.rw.rules()[cat]
-          if rule.name == 'Testing experiment' and action.judgment and self.optionsWidget.showJudgment():
-            item = self.createActionItem(action, cat, QRectF(x1, cat*Y+self.margin, x2-x1, Y-2*self.margin-15), colorOption)
-            j = QGraphicsTextItem('J')
-            j.setPos((x1+x2)/2 - 5, cat*Y + self.margin + 72*Y/100)
-            self.scene.addItem(j)
-          else:
-            item = self.createActionItem(action, cat, QRectF(x1, cat*Y+self.margin, x2-x1, Y-2*self.margin), colorOption)
-          item.setToolTip("%s - %s: %s" % (action.startText, action.endText, ', '.join(action.steps)))
-          self.scene.addItem(item)
+    SplitTime = 35 * 60
+    NumParts = math.ceil(float(endTime) / SplitTime)
+    R = len(self.rw.rules())
+    GraphHeight = (R + 2.5) * Y
+    
+    if NumParts == 1:
+      SplitTime = endTime
+    
+    print("Number of parts: %d" % NumParts)
+    
+    for i in range(NumParts):
+      base = QGraphicsRectItem(0, 0, 0, 0)
+      base.setPos(0, i * GraphHeight)
+      self.drawAxes(SplitTime, R, X, Y, base, xStartMinutes=i*SplitTime / 60)
+      if self.optionsWidget.showGridLines():
+        for ir in range(R):
+          line = QGraphicsLineItem(0, (ir+0.5)*Y, SplitTime*X, (ir+0.5)*Y, base)
+          line.setPen(QPen(Qt.gray))
+    
+      timeLabel = QGraphicsTextItem("Time [min]", base)
+      timeLabel.setPos(X * SplitTime * 0.9, Y * (R+0.75))
+      
+      for action in [a for a in self.parser.actions if (a.end - offset) >= i * SplitTime and (a.start - offset) <= (i+1) * SplitTime]:
+        x1 = max([action.start - offset - i * SplitTime, 0]) * X
+        x2 = min([action.end - offset - i * SplitTime, SplitTime]) * X
+        categories = self.getCategories(action)
+        if categories:
+          for cat in categories:
+            rule = self.rw.rules()[cat]
+            if rule.name == 'Testing experiment' and action.judgment and self.optionsWidget.showJudgment():
+              item = self.createActionItem(action, cat, QRectF(x1, cat*Y+self.margin, x2-x1, Y-2*self.margin-15), colorOption, base)
+              j = QGraphicsTextItem('J', base)
+              j.setPos((x1+x2)/2 - 5, cat*Y + self.margin + 72*Y/100)
+            else:
+              item = self.createActionItem(action, cat, QRectF(x1, cat*Y+self.margin, x2-x1, Y-2*self.margin), colorOption, base)
+            item.setToolTip("%s - %s: %s" % (action.startText, action.endText, ', '.join(action.steps)))
+      self.scene.addItem(base)
 
   def displayExpertivity(self):
     parts = self.optionsWidget.ui.numberOfParts.value()
@@ -292,7 +300,7 @@ class MainWindow(QMainWindow):
     X = self.optionsWidget.ui.xScaleSlider.value() / 30
     Y = self.optionsWidget.ui.yScaleSlider.value()
 
-    self.drawAxes(parts * T, Height, X, Y, labels=False)
+    self.drawAxes(parts * T, Height, X, 0, Y, parentItem=None, labels=False)
     timeLabel = QGraphicsTextItem("Time [min]")
     timeLabel.setPos(X * T * parts * 0.9, Y * (Height+0.75))
     self.scene.addItem(timeLabel)
@@ -409,16 +417,16 @@ class MainWindow(QMainWindow):
             self.drawArrow(QLineF(x2, y2, x1, y1), 0.5 + matrix[destination][source] * A, circles[destination]['size'], circles[source]['size'])
 
 
-  def createActionItem(self, action, category, rect, colorOption):
+  def createActionItem(self, action, category, rect, colorOption, base):
     if colorOption == COLOR_PERSON:
-      item = QGraphicsRectItem(rect)
+      item = QGraphicsRectItem(rect, base)
       item.setBrush(self.getPersonColor(action.talkers))
     elif colorOption == COLOR_STEP:
-      item = QGraphicsRectItem(rect)
+      item = QGraphicsRectItem(rect, base)
       item.setBrush(categoryColor(category))
     else:
       n = len(action.hypotheses)
-      item = QGraphicsRectItem(rect)
+      item = QGraphicsRectItem(rect, base)
       if n:
         start = 0
         step = rect.height() / n
@@ -476,11 +484,11 @@ class MainWindow(QMainWindow):
         times[cat] += (x2-x1)
     return [t*3600/total for t in times]
 
-  def drawAxes(self, xMax, yMax, X, Y, labels = True):
-    xAxis = QGraphicsLineItem(-10, yMax*Y, xMax*X + 30, yMax*Y)
-    yAxis = QGraphicsLineItem(0, yMax*Y + 10, 0, -30)
+  def drawAxes(self, xMax, yMax, X, Y, parentItem = None, labels = True, xStartMinutes = 0):
+    xAxis = QGraphicsLineItem(-10, yMax*Y, xMax*X + 30, yMax*Y, parentItem)
+    yAxis = QGraphicsLineItem(0, yMax*Y + 10, 0, -30, parentItem)
 
-    xArrow = QGraphicsPolygonItem(arrow())
+    xArrow = QGraphicsPolygonItem(arrow(), parentItem)
     xArrow.setPos(xMax*X + 30, yMax*Y)
     xArrow.setRotation(-90)
     xArrow.setBrush(QBrush(Qt.black))
@@ -488,7 +496,7 @@ class MainWindow(QMainWindow):
     if labels:
       for i in range(int(xMax/300+1)):
         tick = QGraphicsLineItem(i*300*X, yMax*Y + 5, i*300*X, yMax*Y + 1, xAxis)
-        label = QGraphicsTextItem('%.2d:%.2d' % (i*5, 0), xAxis)
+        label = QGraphicsTextItem('%.2d:%.2d' % (i*5 + xStartMinutes, 0), xAxis)
         label.setPos(i*300*X - 22, yMax*Y + 5)
 
       i = 0
@@ -498,17 +506,10 @@ class MainWindow(QMainWindow):
         label.setPos(-label.boundingRect().width() - 10, (0.5 + i) * Y - label.boundingRect().height()/2)
         i = i + 1
 
-    yArrow = QGraphicsPolygonItem(arrow())
+    yArrow = QGraphicsPolygonItem(arrow(), parentItem)
     yArrow.setPos(0, -30)
     yArrow.setRotation(180)
     yArrow.setBrush(QBrush(Qt.black))
-
-    self.scene.addItem(xAxis)
-    self.scene.addItem(yAxis)
-    self.scene.addItem(xArrow)
-    self.scene.addItem(yArrow)
-
-    self.view.resetView()
 
   def saveImage(self):
     name = QFileDialog.getSaveFileName(self, None, None, "Image Files (*.png *.jpg);;Vector Image Files (*.svg *.svgz)")
