@@ -428,7 +428,10 @@ class MainWindow(QMainWindow):
         for h in action.hypotheses:
           r = QRectF(rect.left(), rect.top() + start, rect.width(), step)
           i = QGraphicsRectItem(r, item)
-          i.setBrush(self.getHypothesisColor(h))
+          if colorOption == COLOR_HYPOTHESIS or 0 in action.phenomena:
+            i.setBrush(self.getHypothesisColor(h))
+          else:
+            i.setBrush(Qt.darkGray)
           i.setPen(QPen(Qt.NoPen))
           start = start + step
       else:

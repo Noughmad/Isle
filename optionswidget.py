@@ -25,6 +25,7 @@ from expertivitydialog import ExpertivityDialog
 
 COLOR_PERSON = 1
 COLOR_HYPOTHESIS = 2
+COLOR_HYPOTHESIS_CONE = 4
 COLOR_STEP = 3
 
 TABS = [
@@ -58,7 +59,7 @@ class OptionsWidget(QWidget):
     if self.ui.colorByPerson.isChecked():
       return COLOR_PERSON
     elif self.ui.colorByHypothesis.isChecked():
-      return COLOR_HYPOTHESIS
+      return COLOR_HYPOTHESIS_CONE if self.ui.colorOnlyCone.isChecked() else COLOR_HYPOTHESIS
     else:
       return COLOR_STEP
     
@@ -82,10 +83,13 @@ class OptionsWidget(QWidget):
     c = s.value("Color", "Hypothesis")
     if c == "Hypothesis":
       self.ui.colorByHypothesis.setChecked(True)
-    elif c == "Person":
       self.ui.colorByPerson.setChecked(True)
     else:
       self.ui.colorByStep.setChecked(True)
+      
+    self.ui.colorOnlyCone.setChecked(s.value("ColorOnlyCone", True, bool))
+    self.ui.colorOnlyCone.setEnabled(self.ui.colorByHypothesis.isChecked())
+
     self.ui.showJudgment.setChecked(s.value("JudgmentMarkers", True, bool))
     self.ui.showGridLines.setChecked(s.value("GridLines", True, bool))
     self.ui.xScaleSlider.setValue(s.value("ScaleX", 40, int))
@@ -125,6 +129,7 @@ class OptionsWidget(QWidget):
       s.setValue("Color", "Person")
     else:
       s.setValue("Color", "Step")
+    s.setValue("ColorOnlyCone", self.ui.colorOnlyCone.isChecked())
     s.setValue("ScaleX", self.ui.xScaleSlider.value())
     s.setValue("ScaleY", self.ui.yScaleSlider.value())
     s.setValue("JudgmentMarkers", self.ui.showJudgment.isChecked())

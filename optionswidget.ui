@@ -17,7 +17,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>2</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="timelineTab">
       <attribute name="title">
@@ -46,6 +46,33 @@
              <bool>true</bool>
             </property>
            </widget>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_2">
+            <item>
+             <spacer name="horizontalSpacer">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeType">
+               <enum>QSizePolicy::Fixed</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="colorOnlyCone">
+              <property name="text">
+               <string>Only the Cone phenomenon</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
           <item>
            <widget class="QRadioButton" name="colorByStep">
@@ -390,12 +417,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>78</x>
-     <y>108</y>
+     <x>93</x>
+     <y>106</y>
     </hint>
     <hint type="destinationlabel">
-     <x>101</x>
-     <y>338</y>
+     <x>116</x>
+     <y>392</y>
     </hint>
    </hints>
   </connection>
@@ -406,12 +433,28 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>168</x>
-     <y>111</y>
+     <x>183</x>
+     <y>106</y>
     </hint>
     <hint type="destinationlabel">
-     <x>133</x>
-     <y>319</y>
+     <x>148</x>
+     <y>365</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>colorByHypothesis</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>colorOnlyCone</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>88</x>
+     <y>94</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>93</x>
+     <y>119</y>
     </hint>
    </hints>
   </connection>
