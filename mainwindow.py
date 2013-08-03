@@ -297,7 +297,7 @@ class MainWindow(QMainWindow):
     X = self.optionsWidget.ui.xScaleSlider.value() / 30
     Y = self.optionsWidget.ui.yScaleSlider.value()
 
-    self.drawAxes(parts * T, Height, X, 0, Y, parentItem=None, labels=False)
+    self.drawAxes(parts * T, Height, X, Y, parentItem=None, labels=False)
     timeLabel = QGraphicsTextItem("Time [min]")
     timeLabel.setPos(X * T * parts * 0.9, Y * (Height+0.75))
     self.scene.addItem(timeLabel)
@@ -542,7 +542,8 @@ class MainWindow(QMainWindow):
     colorings = {
       COLOR_STEP : 'step',
       COLOR_PERSON : 'person',
-      COLOR_HYPOTHESIS : 'hypothesis',
+      COLOR_HYPOTHESIS_CONE : 'hypothesis',
+      COLOR_HYPOTHESIS : 'hypothesis_all',
     }
     
     for color_option, name in colorings.items():
