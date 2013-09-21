@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 Copyright 2012 Miha ÄanÄula <miha@noughmad.eu>
 This file is part of Isle, a program for displaying transcripts.
@@ -229,7 +231,7 @@ class MainWindow(QMainWindow):
           line = QGraphicsLineItem(0, (ir+0.5)*Y, SplitTime*X, (ir+0.5)*Y, base)
           line.setPen(QPen(Qt.gray))
     
-      timeLabel = QGraphicsTextItem("Äas [min]", base)
+      timeLabel = QGraphicsTextItem("Čas [min]", base)
       timeLabel.setPos(X * SplitTime * 0.9, Y * (R+0.75))
       
       for action in [a for a in self.parser.actions if (a.end - offset) >= i * SplitTime and (a.start - offset) <= (i+1) * SplitTime]:
