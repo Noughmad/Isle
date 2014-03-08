@@ -205,6 +205,68 @@ class MainWindow(QMainWindow):
       
     self.scene.setSceneRect(self.scene.itemsBoundingRect())
     
+  def displayLegend(self, colorOption):
+    
+    Y = 100
+    self.margin = 10
+    
+    if colorOption == COLOR_PERSON_GRAYSCALE:
+      m = self.margin
+      q = int((Y - 2 * m)/2)
+      s = 2*q
+
+      self.patternImage = QImage(QSize(s,s), QImage.Format_ARGB32)
+      
+      p = QPainter()
+      p.begin(self.patternImage)
+      p.fillRect(0, 0, q, m, Qt.darkGray)
+      p.fillRect(0, m, q, q, Qt.lightGray)
+      p.fillRect(0, m + q, q, q-m, Qt.darkGray)
+
+      p.fillRect(q, 0, q, m, Qt.lightGray)
+      p.fillRect(q, m, q, q, Qt.darkGray)
+      p.fillRect(q, m + q, q, q-m, Qt.lightGray)
+      p.end()      
+    w = Y - 2*self.margin
+    
+    A = Action()
+    A.talkers.add('A')
+    
+    B = Action()
+    B.talkers.add('B')
+    
+    AB = Action()
+    AB.talkers.add('A')
+    AB.talkers.add('B')
+    
+    rectA = self.createActionItem(A, None, QRectF(0, self.margin, w, w), colorOption, None)
+    rectB = self.createActionItem(B, None, QRectF(0, self.margin + Y, w, w), colorOption, None)
+    rectAB = self.createActionItem(AB, None, QRectF(0, self.margin + 2 * Y, w, w), colorOption, None)
+    
+    self.scene.addItem(rectA)
+    self.scene.addItem(rectB)
+    self.scene.addItem(rectAB)
+    
+    font = QFont()
+    font.setPointSize(32)
+    
+    textA = QGraphicsTextItem("Person A")
+    textA.setPos(Y, self.margin + 12)
+    textA.setFont(font)
+    
+    textB = QGraphicsTextItem("Person B")
+    textB.setPos(Y, self.margin + Y + 12)
+    textB.setFont(font)
+    
+    textAB = QGraphicsTextItem("Both")
+    textAB.setPos(Y, self.margin + 2 * Y + 12)
+    textAB.setFont(font)
+    
+    self.scene.addItem(textA)
+    self.scene.addItem(textB)
+    self.scene.addItem(textAB)
+
+    
   def displayTimeline(self, colorOption):
 
     offset = self.parser.actions[0].start
@@ -587,6 +649,20 @@ class MainWindow(QMainWindow):
       self.saveAsImage(image_file + '_timeline_' + name + '.jpg')
       if latex:
         self.convertSvgToEps(image_file + '_timeline_' + name)
+        
+    legends = {
+      COLOR_PERSON : 'person',
+      COLOR_PERSON_GRAYSCALE : 'person_gray',
+    }
+        
+    for color_option, name in legends.items():
+      self.scene.clear()
+      self.displayLegend(color_option)
+      self.scene.setSceneRect(self.scene.itemsBoundingRect())
+      self.saveAsSvg(image_file + '_legend_' + name + '.svg')
+      self.saveAsImage(image_file + '_legend_' + name + '.jpg')
+      if latex:
+        self.convertSvgToEps(image_file + '_legend_' + name)
     
     self.scene.clear()
     self.displayCycle(self._fluxMatrix, True)
