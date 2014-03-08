@@ -211,9 +211,9 @@ class MainWindow(QMainWindow):
     endTime = self.parser.actions[-1].end - offset
     
     X = self.optionsWidget.ui.xScaleSlider.value() / 30
-    Y = self.optionsWidget.ui.yScaleSlider.value()
+    Y = 10 * int(self.optionsWidget.ui.yScaleSlider.value() / 10)
     self.margin = Y / 10
-    
+        
     SplitTime = self.optionsWidget.ui.splitMinutes.value() * 60
     NumParts = math.ceil(float(endTime) / SplitTime)
     R = len(self.rw.rules())
@@ -221,6 +221,24 @@ class MainWindow(QMainWindow):
     
     if NumParts == 1:
       SplitTime = endTime
+      
+    if colorOption == COLOR_PERSON_GRAYSCALE:
+      m = self.margin
+      q = int((Y - 2 * m)/4)
+      s = 2*q
+
+      self.patternImage = QImage(QSize(s,s), QImage.Format_ARGB32)
+      
+      p = QPainter()
+      p.begin(self.patternImage)
+      p.fillRect(0, 0, q, m, Qt.darkGray)
+      p.fillRect(0, m, q, q, Qt.lightGray)
+      p.fillRect(0, m + q, q, q, Qt.darkGray)
+
+      p.fillRect(q, 0, q, m, Qt.lightGray)
+      p.fillRect(q, m, q, q, Qt.darkGray)
+      p.fillRect(q, m + q, q, q, Qt.lightGray)
+      p.end()
     
     for i in range(NumParts):
       base = QGraphicsRectItem(0, 0, 0, 0)
@@ -417,9 +435,9 @@ class MainWindow(QMainWindow):
 
 
   def createActionItem(self, action, category, rect, colorOption, base):
-    if colorOption == COLOR_PERSON:
+    if colorOption in [COLOR_PERSON, COLOR_PERSON_GRAYSCALE]:
       item = QGraphicsRectItem(rect, base)
-      item.setBrush(self.getPersonColor(action.talkers))
+      item.setBrush(self.getPersonColor(action.talkers, colorOption))
     elif colorOption == COLOR_STEP:
       item = QGraphicsRectItem(rect, base)
       item.setBrush(categoryColor(category))
@@ -445,15 +463,27 @@ class MainWindow(QMainWindow):
     item.setPen(QPen(Qt.NoPen))
     return item
 
-  def getPersonColor(self, talkers):
-    if 'A' in talkers and 'B' in talkers:
-      return Qt.darkMagenta
-    elif 'A' in talkers:
-      return Qt.red
-    elif 'B' in talkers:
-      return Qt.blue
+  def getPersonColor(self, talkers, colorOption):
+    if colorOption == COLOR_PERSON_GRAYSCALE:
+      if 'A' in talkers and 'B' in talkers:
+        b = QBrush()
+        b.setTextureImage(self.patternImage)
+        return b
+      elif 'A' in talkers:
+        return Qt.lightGray
+      elif 'B' in talkers:
+        return Qt.darkGray
+      else:
+        return Qt.gray
     else:
-      return Qt.gray
+      if 'A' in talkers and 'B' in talkers:
+        return Qt.darkMagenta
+      elif 'A' in talkers:
+        return Qt.red
+      elif 'B' in talkers:
+        return Qt.blue
+      else:
+        return Qt.gray
 
   def getHypothesisColor(self, hypothesis):
     (p, i) = self.hypoIndexes[hypothesis]
@@ -544,6 +574,7 @@ class MainWindow(QMainWindow):
     colorings = {
       COLOR_STEP : 'step',
       COLOR_PERSON : 'person',
+      COLOR_PERSON_GRAYSCALE : 'person_gray',
       COLOR_HYPOTHESIS_CONE : 'hypothesis',
       COLOR_HYPOTHESIS : 'hypothesis_all',
     }

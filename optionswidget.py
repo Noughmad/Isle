@@ -24,6 +24,7 @@ from ui_optionswidget import Ui_OptionsWidget
 from expertivitydialog import ExpertivityDialog
 
 COLOR_PERSON = 1
+COLOR_PERSON_GRAYSCALE = 5
 COLOR_HYPOTHESIS = 2
 COLOR_HYPOTHESIS_CONE = 4
 COLOR_STEP = 3
@@ -44,7 +45,7 @@ class OptionsWidget(QWidget):
     self.ui = Ui_OptionsWidget()
     self.ui.setupUi(self)
 
-    for check in [self.ui.colorByPerson, self.ui.colorByHypothesis, self.ui.colorByStep, self.ui.showJudgment, self.ui.coloredStepsCheck, self.ui.transitionsRadioButton, self.ui.overlapRadioButton, self.ui.showGridLines, self.ui.colorOnlyCone]:
+    for check in [self.ui.colorByPerson, self.ui.colorByHypothesis, self.ui.colorByStep, self.ui.showJudgment, self.ui.coloredStepsCheck, self.ui.transitionsRadioButton, self.ui.overlapRadioButton, self.ui.showGridLines, self.ui.colorOnlyCone, self.ui.colorGrayscale]:
       check.toggled.connect(self.optionsChanged)
     
     for slider in [self.ui.cycleRadiusSlider, self.ui.thicknessSlider, self.ui.stepSizeSlider, self.ui.arrowPositionSlider, self.ui.xScaleSlider, self.ui.yScaleSlider, self.ui.arrowPointSlider, self.ui.arrowSizeSlider, self.ui.numberOfParts]:
@@ -59,7 +60,7 @@ class OptionsWidget(QWidget):
 
   def colorOption(self):
     if self.ui.colorByPerson.isChecked():
-      return COLOR_PERSON
+      return COLOR_PERSON_GRAYSCALE if self.ui.colorGrayscale.isChecked() else COLOR_PERSON
     elif self.ui.colorByHypothesis.isChecked():
       return COLOR_HYPOTHESIS_CONE if self.ui.colorOnlyCone.isChecked() else COLOR_HYPOTHESIS
     else:

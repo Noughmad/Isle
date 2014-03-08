@@ -38,6 +38,36 @@
            </widget>
           </item>
           <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_4">
+            <item>
+             <spacer name="horizontalSpacer_3">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeType">
+               <enum>QSizePolicy::Fixed</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="colorGrayscale">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="text">
+               <string>Grayscale</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
            <widget class="QRadioButton" name="colorByHypothesis">
             <property name="text">
              <string>By Hypothesis</string>
@@ -492,12 +522,28 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>88</x>
-     <y>94</y>
+     <x>103</x>
+     <y>133</y>
     </hint>
     <hint type="destinationlabel">
-     <x>93</x>
-     <y>119</y>
+     <x>133</x>
+     <y>159</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>colorByPerson</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>colorGrayscale</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>90</x>
+     <y>68</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>88</x>
+     <y>99</y>
     </hint>
    </hints>
   </connection>
