@@ -106,7 +106,7 @@ class MainWindow(QMainWindow):
     
     self.timelineFont = QFont()
     self.timelineFont.setFamily("Times")
-    self.timelineFont.setPointSize(9)
+    self.timelineFont.setPointSize(14)
     
     self.transitionFont = QFont()
     self.transitionFont.setFamily("Times")
@@ -224,8 +224,8 @@ class MainWindow(QMainWindow):
     
   def displayLegend(self, colorOption):
     
-    Y = 100
-    self.margin = 10
+    Y = 40
+    self.margin = 0
     
     if colorOption == COLOR_PERSON_GRAYSCALE:
       m = self.margin
@@ -236,13 +236,10 @@ class MainWindow(QMainWindow):
       
       p = QPainter()
       p.begin(self.patternImage)
-      p.fillRect(0, 0, q, m, Qt.darkGray)
-      p.fillRect(0, m, q, q, Qt.lightGray)
-      p.fillRect(0, m + q, q, q-m, Qt.darkGray)
-
-      p.fillRect(q, 0, q, m, Qt.lightGray)
-      p.fillRect(q, m, q, q, Qt.darkGray)
-      p.fillRect(q, m + q, q, q-m, Qt.lightGray)
+      
+      for i in range(4):
+        for j in range(4):
+          p.fillRect(i*10, j*10, 10, 10, Qt.darkGray if (i+j)%2 == 0 else Qt.lightGray)
       p.end()      
     w = Y - 2*self.margin
     
@@ -256,7 +253,7 @@ class MainWindow(QMainWindow):
     AB.talkers.add('A')
     AB.talkers.add('B')
     
-    spacing = 350
+    spacing = 150
     
     rectA = self.createActionItem(A, None, QRectF(0, self.margin, w, w), colorOption, None)
     rectB = self.createActionItem(B, None, QRectF(spacing, self.margin, w, w), colorOption, None)
@@ -265,21 +262,20 @@ class MainWindow(QMainWindow):
     self.scene.addItem(rectA)
     self.scene.addItem(rectB)
     self.scene.addItem(rectAB)
-    
-    font = self.timelineFont
-    font.setPointSize(32)
+   
+    offset = 6
     
     textA = QGraphicsTextItem("Person A")
-    textA.setPos(Y, self.margin + 12)
-    textA.setFont(font)
+    textA.setPos(Y + 6, self.margin + 6)
+    textA.setFont(self.timelineFont)
     
     textB = QGraphicsTextItem("Person B")
-    textB.setPos(Y + spacing, self.margin + 12)
-    textB.setFont(font)
+    textB.setPos(Y + spacing + 6, self.margin + 6)
+    textB.setFont(self.timelineFont)
     
     textAB = QGraphicsTextItem("Both")
-    textAB.setPos(Y + 2*spacing, self.margin + 12)
-    textAB.setFont(font)
+    textAB.setPos(Y + 2*spacing + 6, self.margin + 6)
+    textAB.setFont(self.timelineFont)
     
     self.scene.addItem(textA)
     self.scene.addItem(textB)
