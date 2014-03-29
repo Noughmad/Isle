@@ -104,6 +104,23 @@ class MainWindow(QMainWindow):
     dock.setWindowTitle('Options')
     self.addDockWidget(Qt.LeftDockWidgetArea, dock)
     
+    self.timelineFont = QFont()
+    self.timelineFont.setFamily("Times")
+    self.timelineFont.setPointSize(9)
+    
+    self.transitionFont = QFont()
+    self.transitionFont.setFamily("Times")
+    self.transitionFont.setPointSize(12)
+    
+  def alignRight(self, item):
+    fmt = QTextBlockFormat()
+    fmt.setAlignment(Qt.AlignRight)
+    cursor = item.textCursor()
+    cursor.select(QTextCursor.Document)
+    cursor.mergeBlockFormat(fmt)
+    cursor.clearSelection()
+    item.setTextCursor(cursor)
+    
   def createActions(self):
     fileMenu = self.menuBar().addMenu("&File")
     load = QAction('Open', self)
@@ -239,15 +256,17 @@ class MainWindow(QMainWindow):
     AB.talkers.add('A')
     AB.talkers.add('B')
     
+    spacing = 350
+    
     rectA = self.createActionItem(A, None, QRectF(0, self.margin, w, w), colorOption, None)
-    rectB = self.createActionItem(B, None, QRectF(0, self.margin + Y, w, w), colorOption, None)
-    rectAB = self.createActionItem(AB, None, QRectF(0, self.margin + 2 * Y, w, w), colorOption, None)
+    rectB = self.createActionItem(B, None, QRectF(spacing, self.margin, w, w), colorOption, None)
+    rectAB = self.createActionItem(AB, None, QRectF(2*spacing, self.margin, w, w), colorOption, None)
     
     self.scene.addItem(rectA)
     self.scene.addItem(rectB)
     self.scene.addItem(rectAB)
     
-    font = QFont()
+    font = self.timelineFont
     font.setPointSize(32)
     
     textA = QGraphicsTextItem("Person A")
@@ -255,11 +274,11 @@ class MainWindow(QMainWindow):
     textA.setFont(font)
     
     textB = QGraphicsTextItem("Person B")
-    textB.setPos(Y, self.margin + Y + 12)
+    textB.setPos(Y + spacing, self.margin + 12)
     textB.setFont(font)
     
     textAB = QGraphicsTextItem("Both")
-    textAB.setPos(Y, self.margin + 2 * Y + 12)
+    textAB.setPos(Y + 2*spacing, self.margin + 12)
     textAB.setFont(font)
     
     self.scene.addItem(textA)
@@ -311,7 +330,8 @@ class MainWindow(QMainWindow):
           line = QGraphicsLineItem(0, (ir+0.5)*Y, SplitTime*X, (ir+0.5)*Y, base)
           line.setPen(QPen(Qt.gray))
     
-      timeLabel = QGraphicsTextItem("Čas [min]", base)
+      timeLabel = QGraphicsTextItem("Time [min]", base)
+      timeLabel.setFont(self.timelineFont)
       timeLabel.setPos(X * SplitTime * 0.9, Y * (R+0.75))
       
       for action in [a for a in self.parser.actions if (a.end - offset) >= i * SplitTime and (a.start - offset) <= (i+1) * SplitTime]:
@@ -324,6 +344,7 @@ class MainWindow(QMainWindow):
             if rule.name == 'Testing experiment' and action.judgment and self.optionsWidget.showJudgment():
               item = self.createActionItem(action, cat, QRectF(x1, cat*Y+self.margin, x2-x1, Y-2*self.margin-15), colorOption, base)
               j = QGraphicsTextItem('J', base)
+              j.setFont(self.timelineFont)
               j.setPos((x1+x2)/2 - 5, cat*Y + self.margin + 72*Y/100)
             else:
               item = self.createActionItem(action, cat, QRectF(x1, cat*Y+self.margin, x2-x1, Y-2*self.margin), colorOption, base)
@@ -380,7 +401,8 @@ class MainWindow(QMainWindow):
     Y = self.optionsWidget.ui.yScaleSlider.value()
 
     self.drawAxes(parts * T, Height, X, Y, parentItem=None, labels=False)
-    timeLabel = QGraphicsTextItem("Čas [min]")
+    timeLabel = QGraphicsTextItem("Time [min]")
+    timeLabel.setFont(self.timelineFont)
     timeLabel.setPos(X * T * parts * 0.9, Y * (Height+0.75))
     self.scene.addItem(timeLabel)
       
@@ -401,6 +423,7 @@ class MainWindow(QMainWindow):
       minutes = int(t / 60)
       secs = int(t) % 60
       label = QGraphicsTextItem('%.2d:%.2d' % (minutes, secs))
+      label.setFont(self.timelineFont)
       label.setPos((i+1)*T*X - 22, Height*Y + 5)
       
       self.scene.addItem(point)
@@ -467,6 +490,7 @@ class MainWindow(QMainWindow):
       self.scene.addItem(item)
       
       text = QGraphicsTextItem(circle['name'])
+      text.setFont(self.transitionFont)
       text.setPos(x, y)
       self.scene.addItem(text)
       
@@ -585,12 +609,14 @@ class MainWindow(QMainWindow):
       for i in range(int(xMax/300+1)):
         tick = QGraphicsLineItem(i*300*X, yMax*Y + 5, i*300*X, yMax*Y + 1, xAxis)
         label = QGraphicsTextItem('%.2d:%.2d' % (i*5 + xStartMinutes, 0), xAxis)
-        label.setPos(i*300*X - 22, yMax*Y + 5)
+        label.setFont(self.timelineFont)
+        label.setPos(i*300*X - label.boundingRect().width()/2, yMax*Y + 5)
 
       i = 0
       for rule in self.rw.rules():
         tick = QGraphicsLineItem(-5, i * Y, 6, i*Y, yAxis)
         label = QGraphicsTextItem(rule.name, yAxis)
+        label.setFont(self.timelineFont)
         label.setPos(-label.boundingRect().width() - 10, (0.5 + i) * Y - label.boundingRect().height()/2)
         i = i + 1
 
