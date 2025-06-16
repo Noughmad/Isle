@@ -17,7 +17,8 @@ along with This program. If not, see http://www.gnu.org/licenses/.
 
 """
 
-from PyQt4.QtGui import *
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
 
 class View(QGraphicsView):
   def __init__(self, parent):
@@ -28,7 +29,7 @@ class View(QGraphicsView):
     self.zoom = 1
 
   def wheelEvent(self, event):
-    self.zoom = self.zoom * pow(2, event.delta() / 480.0)
+    self.zoom = self.zoom * pow(2, event.angleDelta().y() / 480.0)
     if self.zoom < 0.07:
       self.zoom = 0.07
     if self.zoom > 100:

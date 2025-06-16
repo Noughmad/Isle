@@ -18,9 +18,10 @@ You should have received a copy of the GNU General Public License
 along with This program. If not, see http://www.gnu.org/licenses/.
 
 """
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
-from PyQt4.QtSvg import QSvgGenerator
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
+from PyQt5.QtCore import *
+from PyQt5.QtSvg import QSvgGenerator
 
 from lib.parser import *
 from view import *
@@ -145,7 +146,7 @@ class MainWindow(QMainWindow):
     imageMenu.addAction(expertivity)
     
   def loadFile(self):
-    name = QFileDialog.getOpenFileName(self, None, None, "HTML Files (*.html *.htm *.xhtml *.xml)")
+    name, _ = QFileDialog.getOpenFileName(self, None, None, "HTML Files (*.html *.htm *.xhtml *.xml)")
     if name:
       self.loadFileByName(name)
 
@@ -195,6 +196,7 @@ class MainWindow(QMainWindow):
         self.hypoIndexes[h] = (p, i)
         i = i + 1
       self.hypoCounts[p] = len(hs)
+    # print("All hypotheses: ", self.hypoIndexes)
       
 
   def displayIsle(self):
@@ -517,6 +519,7 @@ class MainWindow(QMainWindow):
 
 
   def createActionItem(self, action, category, rect, colorOption, base):
+    # print("Creating action item", action, rect)
     if colorOption in [COLOR_PERSON, COLOR_PERSON_GRAYSCALE]:
       item = QGraphicsRectItem(rect, base)
       item.setBrush(self.getPersonColor(action.talkers, colorOption))
@@ -579,7 +582,7 @@ class MainWindow(QMainWindow):
     if p == 0:
       return QColor.fromHsv(360 * f, 255, 255)
     else:
-      return QColor(0, 255 - 255 * f + 100 * f * (1-f), 255*f + 100 * f * (1-f))
+      return QColor(0, int(255 - 255 * f + 100 * f * (1-f)), int(255*f + 100 * f * (1-f)))
     
   def getCategoryTimes(self):
     total = self.parser.actions[-1].end - self.parser.actions[0].start

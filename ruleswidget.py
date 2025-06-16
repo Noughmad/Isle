@@ -17,8 +17,9 @@ along with This program. If not, see http://www.gnu.org/licenses/.
 
 """
 
-from PyQt4.QtGui import *
-from PyQt4.QtCore import pyqtSignal, QSettings
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
+from PyQt5.QtCore import pyqtSignal, QSettings
 from ui_ruleswidget import Ui_RulesWidget
 
 from lib.rules import Rules

@@ -19,7 +19,7 @@ along with This program. If not, see http://www.gnu.org/licenses/.
 
 import sys
 from mainwindow import MainWindow
-from PyQt4.QtGui import QApplication
+from PyQt5.QtWidgets import QApplication
 
 if __name__ == "__main__":
   app = QApplication(sys.argv)

@@ -18,8 +18,8 @@
 # 
 #
 
-from PyQt4.QtGui import QDialog, QFileDialog
-from PyQt4.QtCore import QSettings
+from PyQt5.QtWidgets import QDialog, QFileDialog
+from PyQt5.QtCore import QSettings
 
 from ui_autodialog import Ui_AutoDialog
 

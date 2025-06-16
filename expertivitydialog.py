@@ -1,7 +1,7 @@
 
 
-from PyQt4.QtGui import QDialog, QTableWidgetItem
-from PyQt4.QtCore import QSettings
+from PyQt5.QtWidgets import QDialog, QTableWidgetItem
+from PyQt5.QtCore import QSettings
 
 from lib.expertivity import calculateExpertivity
 
