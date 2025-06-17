@@ -64,7 +64,8 @@ class Parser(HTMLParser):
     if tag == 'tr':
       if self.action:
         # print("Finished action:", self.action)
-        self.actions.append(self.action)
+        if hasattr(self.action, "startText"):
+          self.actions.append(self.action)
         self.action = None
     elif tag == 'td':
       if self.column == 1:
@@ -82,8 +83,8 @@ class Parser(HTMLParser):
       elif self.column == 2:
         if self.action:
           steps = self.dataRe.sub("", self.data)
-          phMatch = self.phRe.search(self.data)
-          if phMatch:
+          phMatches = self.phRe.finditer(self.data)
+          for phMatch in phMatches:
             for s in phMatch.group(1).split(','):
               ph = s.strip()
               if ph.startswith('P'):

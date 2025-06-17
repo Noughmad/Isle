@@ -21,6 +21,7 @@ class Action:
   def __init__(self):
     self.start = None
     self.end = None
+    self.stepText = ''
     self.steps = []
     self.talkers = set()
     self.hypotheses = []

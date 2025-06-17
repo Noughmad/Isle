@@ -537,7 +537,7 @@ class MainWindow(QMainWindow):
         for h in action.hypotheses:
           r = QRectF(rect.left(), rect.top() + start, rect.width(), step)
           i = QGraphicsRectItem(r, item)
-          if colorOption == COLOR_HYPOTHESIS or 0 in action.phenomena:
+          if colorOption == COLOR_HYPOTHESIS or 1 in action.phenomena:
             i.setBrush(self.getHypothesisColor(h))
           else:
             i.setBrush(Qt.darkGray)
@@ -579,8 +579,8 @@ class MainWindow(QMainWindow):
     else:
       f = 0.5 + float(i)/max([1, n]) * 0.5
 
-    if p == 0:
-      return QColor.fromHsv(360 * f, 255, 255)
+    if p == 1:
+      return QColor.fromHsv(int(360 * f), 255, 255)
     else:
       return QColor(0, int(255 - 255 * f + 100 * f * (1-f)), int(255*f + 100 * f * (1-f)))
     
@@ -625,7 +625,7 @@ class MainWindow(QMainWindow):
     yArrow.setBrush(QBrush(Qt.black))
 
   def saveImage(self):
-    name = QFileDialog.getSaveFileName(self, None, None, "Image Files (*.png *.jpg);;Vector Image Files (*.svg *.svgz)")
+    name, _ = QFileDialog.getSaveFileName(self, None, None, "Image Files (*.png *.jpg);;Vector Image Files (*.svg *.svgz)")
     if name:
       if name.endswith('.svg') or name.endswith('.svgz'):
         self.saveAsSvg(name)

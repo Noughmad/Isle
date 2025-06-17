@@ -40,7 +40,7 @@ def fluxMatrix(actions, rules):
             lastActions = [previousAction];
           elif previousAction.end == lastTime:
             lastActions.append(previousAction);
-      
+
       for lastAction in lastActions:
         addToMatrix(matrix, lastAction, currentAction, rules)
   return matrix
@@ -59,7 +59,7 @@ def overlapMatrix(actions, rules):
     currentAction = actions[i]
     for j in range(i):
       previousAction = actions[j]
-      if currentAction.start < previousAction.end:
+      if currentAction.start < previousAction.end and currentAction.end > previousAction.start:
         addToMatrix(matrix, previousAction, currentAction, rules, bidirectional=True)
   
   return matrix
